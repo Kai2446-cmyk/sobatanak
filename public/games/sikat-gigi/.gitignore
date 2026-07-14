@@ -1,0 +1,9 @@
+node_modules/
+build/
+# Folder dist wajib ikut Git karena Laravel memuat hasil build game dari public/games.
+# Jangan tambahkan "dist/" ke ignore.
+coverage/
+.DS_Store
+*.log
+.env*
+!.env.example

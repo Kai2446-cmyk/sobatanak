@@ -1,0 +1,356 @@
+@import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Quicksand:wght@500;700&display=swap');
+@import "tailwindcss";
+
+:root {
+  --font-sans: "Fredoka", "Quicksand", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Fredoka", sans-serif;
+}
+
+body {
+  font-family: var(--font-sans);
+}
+
+@layer utilities {
+  /* Cute child-friendly animations style declarations */
+  .animate-bounce-gentle {
+    animation: bounceGentle 2s infinite ease-in-out;
+  }
+  
+  .animate-pulse-subtle {
+    animation: pulseSubtle 1.5s infinite ease-in-out;
+  }
+  
+  .animate-pop-in {
+    animation: popIn 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+  }
+
+  .animate-float {
+    animation: floatMove 6s infinite ease-in-out alternate;
+  }
+
+  .animate-fade-in {
+    animation: fadeIn 0.3s ease-out forwards;
+  }
+}
+
+@keyframes bounceGentle {
+  0%, 100% {
+    transform: translateY(0) scale(1);
+  }
+  50% {
+    transform: translateY(-8px) scale(1.02);
+  }
+}
+
+@keyframes pulseSubtle {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.05);
+    opacity: 0.95;
+  }
+}
+
+@keyframes popIn {
+  0% {
+    transform: scale(0) rotate(-15deg);
+    opacity: 0;
+  }
+  70% {
+    transform: scale(1.1) rotate(5deg);
+  }
+  100% {
+    transform: scale(1) rotate(0deg);
+    opacity: 1;
+  }
+}
+
+@keyframes floatMove {
+  0% {
+    transform: translate(0, 0) rotate(0deg);
+  }
+  100% {
+    transform: translate(15px, 15px) rotate(8deg);
+  }
+}
+
+@keyframes burstSpread {
+  0% {
+    transform: translate(0, 0) scale(1.5);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(var(--tw-translate-x, 0), var(--tw-translate-y, 0)) scale(0);
+    opacity: 0;
+  }
+}
+
+@keyframes floatAndFade {
+  0% {
+    transform: translateY(0) scale(0.8);
+    opacity: 0;
+  }
+  20% {
+    transform: translateY(-10px) scale(1.1);
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(-60px) scale(0.9);
+    opacity: 0;
+  }
+}
+
+@keyframes fadeIn {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+@keyframes shakyWarning {
+  0%, 100% {
+    transform: translateX(0);
+  }
+  10% {
+    transform: translateX(-3px);
+  }
+  20% {
+    transform: translateX(3px);
+  }
+  30% {
+    transform: translateX(-3px);
+  }
+  40% {
+    transform: translateX(3px);
+  }
+  50% {
+    transform: translateX(-2px);
+  }
+  60% {
+    transform: translateX(2px);
+  }
+  70% {
+    transform: translateX(-1px);
+  }
+  80% {
+    transform: translateX(1px);
+  }
+  90% {
+    transform: translateX(0);
+  }
+}
+
+.animate-shaky-warning {
+  animation: shakyWarning 0.45s infinite ease-in-out;
+}
+
+/* Tap-Tap Kuman start screen — mascot stays static, germs float gently */
+.tap-start-screen {
+  display: grid;
+  grid-template-columns: minmax(0, 1.02fr) minmax(0, 1.18fr);
+  align-items: center;
+  min-height: 100%;
+  padding: clamp(18px, 3vw, 40px);
+  background: linear-gradient(135deg, rgba(255,255,255,.98), rgba(247,250,255,.95));
+}
+
+.tap-start-visual {
+  position: relative;
+  align-self: stretch;
+  min-height: 390px;
+}
+
+.tap-start-selena {
+  position: absolute;
+  left: 2%;
+  bottom: 1%;
+  width: min(72%, 420px);
+  max-height: 94%;
+  object-fit: contain;
+  object-position: left bottom;
+  filter: drop-shadow(0 16px 22px rgba(54, 65, 110, .16));
+  pointer-events: none;
+  user-select: none;
+}
+
+.tap-start-germ {
+  position: absolute;
+  width: clamp(70px, 9vw, 112px);
+  height: clamp(70px, 9vw, 112px);
+  object-fit: contain;
+  pointer-events: none;
+  user-select: none;
+  filter: drop-shadow(0 10px 13px rgba(39, 54, 92, .14));
+  will-change: transform;
+}
+
+.tap-start-germ-one {
+  top: 13%;
+  right: 8%;
+  animation: tapGermFloatOne 4.4s ease-in-out infinite;
+}
+
+.tap-start-germ-two {
+  top: 42%;
+  right: 0;
+  animation: tapGermFloatTwo 5.1s ease-in-out infinite .35s;
+}
+
+.tap-start-germ-three {
+  right: 13%;
+  bottom: 8%;
+  animation: tapGermFloatThree 4.8s ease-in-out infinite .7s;
+}
+
+.tap-start-copy {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 24px 16px 24px 28px;
+}
+
+.tap-start-copy h1 {
+  margin: 0;
+  color: #182235;
+  font-family: var(--font-display);
+  font-size: clamp(34px, 5.2vw, 72px);
+  font-weight: 900;
+  line-height: .98;
+  letter-spacing: -.035em;
+  white-space: nowrap;
+}
+
+.tap-start-copy p {
+  max-width: 650px;
+  margin: clamp(20px, 3vw, 34px) auto;
+  color: #42516a;
+  font-size: clamp(15px, 1.8vw, 24px);
+  font-weight: 700;
+  line-height: 1.45;
+}
+
+.tap-start-button {
+  display: inline-flex;
+  min-width: min(100%, 450px);
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  border: 0;
+  border-radius: 999px;
+  padding: clamp(16px, 2vw, 22px) clamp(28px, 5vw, 68px);
+  background: linear-gradient(180deg, #25cf69 0%, #18bb58 100%);
+  color: #fff;
+  box-shadow: 0 11px 0 #087e38, 0 17px 26px rgba(13, 132, 62, .22);
+  font-family: var(--font-display);
+  font-size: clamp(20px, 2.4vw, 32px);
+  font-weight: 900;
+  letter-spacing: .04em;
+  cursor: pointer;
+  transition: transform .16s ease, filter .16s ease, box-shadow .16s ease;
+}
+
+.tap-start-button:hover {
+  filter: brightness(1.035);
+  transform: translateY(-2px) scale(1.015);
+}
+
+.tap-start-button:active {
+  transform: translateY(7px) scale(.99);
+  box-shadow: 0 4px 0 #087e38, 0 8px 15px rgba(13, 132, 62, .17);
+}
+
+@keyframes tapGermFloatOne {
+  0%, 100% { transform: translate3d(0, 0, 0) rotate(-4deg); }
+  50% { transform: translate3d(7px, -17px, 0) rotate(5deg); }
+}
+
+@keyframes tapGermFloatTwo {
+  0%, 100% { transform: translate3d(0, 0, 0) rotate(4deg); }
+  50% { transform: translate3d(-10px, -13px, 0) rotate(-5deg); }
+}
+
+@keyframes tapGermFloatThree {
+  0%, 100% { transform: translate3d(0, 0, 0) rotate(-3deg); }
+  50% { transform: translate3d(9px, -15px, 0) rotate(5deg); }
+}
+
+@media (max-width: 760px) {
+  .tap-start-screen {
+    grid-template-columns: 1fr;
+    grid-template-rows: minmax(240px, 48%) auto;
+    padding: 14px 15px 24px;
+  }
+
+  .tap-start-visual { min-height: 250px; }
+  .tap-start-selena { left: 7%; width: min(60%, 290px); }
+  .tap-start-germ { width: clamp(54px, 16vw, 82px); height: clamp(54px, 16vw, 82px); }
+  .tap-start-germ-one { top: 7%; right: 17%; }
+  .tap-start-germ-two { top: 39%; right: 5%; }
+  .tap-start-germ-three { right: 20%; bottom: 1%; }
+  .tap-start-copy { padding: 8px 5px 4px; }
+  .tap-start-copy h1 { white-space: normal; }
+  .tap-start-copy p { margin: 12px auto 18px; }
+  .tap-start-button { min-width: min(92%, 360px); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tap-start-germ { animation: none !important; }
+}
+
+/* Refinement v2: closer proportions to approved reference */
+.tap-start-screen {
+  grid-template-columns: minmax(0, .92fr) minmax(0, 1.08fr);
+  padding: clamp(18px, 2.2vw, 32px);
+}
+.tap-start-visual { min-height: 390px; }
+.tap-start-selena {
+  left: 0;
+  bottom: 0;
+  width: min(82%, 470px);
+  max-height: 97%;
+}
+.tap-start-germ {
+  width: clamp(44px, 5.3vw, 68px);
+  height: clamp(44px, 5.3vw, 68px);
+}
+.tap-start-germ-one { top: 12%; right: 12%; }
+.tap-start-germ-two { top: 43%; right: 3%; }
+.tap-start-germ-three { right: 17%; bottom: 11%; }
+.tap-start-copy { padding: 18px 12px 18px 18px; }
+.tap-start-copy h1 {
+  font-size: clamp(30px, 3.7vw, 52px);
+  line-height: 1.02;
+}
+.tap-start-copy p {
+  max-width: 500px;
+  margin: clamp(14px, 2vw, 22px) auto;
+  font-size: clamp(14px, 1.3vw, 19px);
+  line-height: 1.42;
+}
+.tap-start-button {
+  min-width: min(100%, 360px);
+  gap: 12px;
+  padding: clamp(13px, 1.5vw, 17px) clamp(24px, 3.6vw, 48px);
+  font-size: clamp(18px, 1.8vw, 25px);
+  box-shadow: 0 8px 0 #087e38, 0 13px 21px rgba(13,132,62,.2);
+}
+@media (max-width: 760px) {
+  .tap-start-screen { grid-template-rows: minmax(245px, 49%) auto; }
+  .tap-start-visual { min-height: 250px; }
+  .tap-start-selena { left: 4%; width: min(68%, 315px); }
+  .tap-start-germ { width: clamp(38px, 11vw, 58px); height: clamp(38px, 11vw, 58px); }
+  .tap-start-germ-one { top: 9%; right: 18%; }
+  .tap-start-germ-two { top: 41%; right: 7%; }
+  .tap-start-germ-three { right: 22%; bottom: 4%; }
+  .tap-start-copy h1 { font-size: clamp(28px, 9vw, 40px); }
+  .tap-start-copy p { font-size: 14px; }
+  .tap-start-button { min-width: min(86%, 300px); font-size: 18px; }
+}

@@ -1,0 +1,188 @@
+/* Playful Typography from Google Fonts */
+@import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Quicksand:wght@500;600;700&display=swap');
+@import "tailwindcss";
+
+@layer base {
+  body {
+    background-color: #FFF7ED; /* Background Main */
+    color: #1E2939; /* Text Primary */
+    font-family: 'Fredoka', 'Quicksand', sans-serif;
+  }
+}
+
+/* Custom Child-friendly Playful Utilities */
+.font-fredoka {
+  font-family: 'Fredoka', 'Quicksand', sans-serif;
+}
+
+.font-quicksand {
+  font-family: 'Quicksand', sans-serif;
+}
+
+/* Comic / Playful Borders and Shadows per Bento Grid & Sobat Anak Design System */
+.border-comic {
+  border: 4px solid #1E2939;
+}
+
+.border-comic-thin {
+  border: 2px solid #1E2939;
+}
+
+.shadow-playful {
+  box-shadow: 0 8px 0 rgba(0,0,0,0.05);
+}
+
+.shadow-bento-viewport {
+  box-shadow: 0 12px 0 rgba(255, 138, 101, 0.2);
+}
+
+.border-bento-viewport {
+  border: 6px solid #FF8A65; /* 6px solid var(--coral) */
+}
+
+.shadow-button {
+  box-shadow: 0 4px 0 #D84315;
+}
+
+.shadow-button-active {
+  transform: translateY(2px);
+  box-shadow: 0 2px 0 #D84315;
+}
+
+/* Float animation for decorative bubbles and items */
+@keyframes float {
+  0% { transform: translateY(0px); }
+  50% { transform: translateY(-10px); }
+  100% { transform: translateY(0px); }
+}
+
+.animate-float {
+  animation: float 4s ease-in-out infinite;
+}
+
+.animate-float-delayed {
+  animation: float 4s ease-in-out infinite;
+  animation-delay: 2s;
+}
+
+/* CSS spin animation for restarting icons in game over screen */
+@keyframes soft-spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+@keyframes shake-alarm {
+  0%, 100% { transform: translateX(0); }
+  20% { transform: translateX(-4px); }
+  40% { transform: translateX(4px); }
+  60% { transform: translateX(-3px); }
+  80% { transform: translateX(3px); }
+}
+
+.animate-shake-timer {
+  animation: shake-alarm 0.42s ease-in-out infinite;
+  background-color: #ffffff !important;
+  transform-origin: center;
+}
+
+
+@keyframes twinkle {
+  0% { transform: scale(0) rotate(0deg); opacity: 0; }
+  50% { transform: scale(1.3) rotate(180deg); opacity: 1; }
+  100% { transform: scale(0) rotate(360deg); opacity: 0; }
+}
+
+.animate-twinkle {
+  animation: twinkle 1.4s ease-in-out infinite;
+}
+
+.animate-soft-spin {
+  animation: soft-spin 3s linear infinite;
+}
+
+/* Custom brush wiggle cursor indicator for realistic feel */
+.cursor-toothbrush-grip { cursor: none; }
+
+@keyframes spinSlow {
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-spin-slow {
+  animation: spinSlow 2.5s linear infinite;
+}
+
+@keyframes popIn {
+  0% {
+    transform: scale(0.92) translateY(12px);
+    opacity: 0;
+  }
+
+  70% {
+    transform: scale(1.03) translateY(-2px);
+    opacity: 1;
+  }
+
+  100% {
+    transform: scale(1) translateY(0);
+    opacity: 1;
+  }
+}
+
+.animate-pop-in {
+  animation: popIn 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+}
+
+@keyframes fadeIn {
+  0% {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.45s ease-out forwards;
+}
+
+@keyframes popIn {
+  0% {
+    opacity: 0;
+    transform: scale(0.92) translateY(18px);
+  }
+
+  70% {
+    opacity: 1;
+    transform: scale(1.03) translateY(-4px);
+  }
+
+  100% {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.animate-pop-in {
+  animation: popIn 0.45s ease-out forwards;
+}
+
+/* Tombol mulai dibuat besar dan tetap proporsional saat disisipkan ke layout SobatAnak */
+.start-game-button {
+  min-height: 72px;
+}
+
+@media (max-width: 640px) {
+  .start-game-button {
+    min-width: 260px;
+    min-height: 64px;
+  }
+}
