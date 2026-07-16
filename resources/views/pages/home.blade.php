@@ -1063,7 +1063,12 @@
     <span class="kids-program-deco kids-program-plane" aria-hidden="true">✈</span>
     <span class="kids-program-deco kids-program-umbrella" aria-hidden="true">☂</span>
 
-    <div class="max-w-7xl mx-auto px-6 md:px-12 relative">
+    <div class="max-w-7xl mx-auto px-6 md:px-12 relative kids-program-shell">
+        <div class="kids-program-side-maskots" aria-hidden="true">
+            <img src="{{ asset('images/solis-game.png') }}" alt="" class="kids-program-maskot kids-program-maskot-left">
+            <img src="{{ asset('images/selena-game.png') }}" alt="" class="kids-program-maskot kids-program-maskot-right">
+        </div>
+
         <div class="kids-program-heading">
             <span class="kids-program-kicker">POINTS & REWARDS</span>
             <h2 class="kids-program-title font-display">Main Seru & Tukarkan <span>Poin</span></h2>
@@ -1101,6 +1106,11 @@
 .kids-program-ball{left:2.5rem;bottom:3.2rem;color:#f5c95d;font-size:2rem}
 .kids-program-plane{right:4.2rem;bottom:4rem;color:#f3a986;font-size:2rem;transform:rotate(-12deg)}
 .kids-program-umbrella{right:5rem;top:3.8rem;color:#86c9f4;font-size:2rem}
+.kids-program-shell{position:relative}
+.kids-program-side-maskots{position:absolute;inset:0;pointer-events:none;z-index:0}
+.kids-program-maskot{position:absolute;width:clamp(120px,12vw,168px);height:auto;filter:drop-shadow(0 18px 28px rgba(42,61,60,.12));animation:kidsProgramMaskotFloat 4.8s ease-in-out infinite}
+.kids-program-maskot-left{left:1rem;top:7.25rem;animation-delay:0s}
+.kids-program-maskot-right{right:1rem;top:7.25rem;animation-delay:.5s}
 .kids-program-heading{text-align:center;max-width:760px;margin:0 auto 2.6rem;position:relative;z-index:1}
 .kids-program-kicker{display:block;color:#ff8a7d;font-weight:1000;letter-spacing:.22em;font-size:.72rem;margin-bottom:.8rem}
 .kids-program-title{font-size:clamp(2.3rem,5vw,4.2rem);line-height:1.05;color:#2a3d3c;font-weight:900;letter-spacing:.01em}
@@ -1118,7 +1128,9 @@
 .kids-program-card a{display:inline-flex;margin-top:1rem;color:#2a3d3c;font-weight:1000;font-size:.82rem;letter-spacing:.08em;text-transform:uppercase;border-bottom:1px solid rgba(42,61,60,.35)}
 .kids-program-card strong{position:absolute;right:1.25rem;bottom:1.25rem;color:#ee7068;font-size:1.2rem;font-weight:1000}
 .kids-program-action{display:flex;justify-content:center;margin-top:2.4rem;position:relative;z-index:1}
-@media(max-width:900px){.kids-program-grid{grid-template-columns:1fr}.kids-program-card{transform:none!important}.kids-program-deco{display:none}.kids-program-reward-section{padding:4.5rem 0}}
+@keyframes kidsProgramMaskotFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+@media(max-width:1100px){.kids-program-maskot{width:132px}.kids-program-maskot-left{left:.35rem}.kids-program-maskot-right{right:.35rem}}
+@media(max-width:900px){.kids-program-grid{grid-template-columns:1fr}.kids-program-card{transform:none!important}.kids-program-deco{display:none}.kids-program-reward-section{padding:4.5rem 0}.kids-program-side-maskots{position:static;display:flex;justify-content:space-between;align-items:flex-end;gap:1rem;max-width:420px;margin:0 auto 1rem;padding:0 .35rem}.kids-program-maskot{position:static;width:min(28vw,120px);animation:none}}
 </style>
 <section class="py-16 testimonial-web-section">
     <div class="testimonial-zigzag" aria-hidden="true"></div>

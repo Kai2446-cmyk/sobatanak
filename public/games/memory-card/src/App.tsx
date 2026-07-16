@@ -96,21 +96,22 @@ function App() {
       )}
 
       {/* Win Modal */}
-      {state.isGameCompleted && state.isWin && state.selectedLevel && (
+      {state.isGameCompleted && state.isWin && state.selectedLevel && state.selectedTheme && (
         <WinModal
           level={state.selectedLevel}
+          themeName={state.selectedTheme}
           score={state.score}
           moves={state.moves}
-          timeLeft={state.timeLeft}
           onBack={actions.backToThemeFromModal}
           onRestart={actions.restartFromModal}
         />
       )}
 
       {/* Lose Modal */}
-      {state.isGameCompleted && !state.isWin && state.selectedLevel && (
+      {state.isGameCompleted && !state.isWin && state.selectedLevel && state.selectedTheme && (
         <LoseModal
           level={state.selectedLevel}
+          themeName={state.selectedTheme}
           score={state.score}
           moves={state.moves}
           onBack={actions.backToThemeFromModal}

@@ -22,7 +22,7 @@ export function LevelPage({ onSelectLevel, isBgMusicMuted, onToggleMusic }: Leve
           <div className="relative">
             <div className="w-32 h-32 md:w-40 md:h-40 rounded-full overflow-hidden shadow-2xl flex items-center justify-center animate-bounce-slow bg-white p-2 border-4 border-amber-300">
               <img 
-                src={import.meta.env.BASE_URL + "logo-sobat-anak.png"} 
+                src="/games/memory-card/dist/logo-sobat-anak.png" 
                 alt="Logo Sobat Anak" 
                 className="w-full h-full object-contain"
                 onError={(e) => {

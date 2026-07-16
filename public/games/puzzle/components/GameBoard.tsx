@@ -16,6 +16,81 @@ interface WrongFeedback {
   id: number;
 }
 
+// CHARACTER FEEDBACK START
+type CharacterId = 'solis' | 'selena';
+
+type FeedbackKey =
+  | 'correct'
+  | 'combo'
+  | 'progress_75'
+  | 'time_low'
+  | 'wrong'
+  | 'hint'
+  | 'pause'
+  | 'idle';
+
+interface ActiveCharacterFeedback {
+  character: CharacterId;
+  message: string;
+  image: string;
+}
+
+const FEEDBACK_DURATION_MS = 2500;
+const IDLE_THRESHOLD_MS = 12000;
+const TIME_LOW_SECONDS = 15;
+const COMBO_WINDOW_MS = 5000;
+const COMBO_REQUIRED = 3;
+
+const FEEDBACK_CONFIG: Record<
+  FeedbackKey,
+  { character: CharacterId; message: string; image: string }
+> = {
+  correct: {
+    character: 'solis',
+    message: 'Bagus sekali! Potongan yang tepat!',
+    image: '/games/puzzle/dist/assets/ekspresi/solis-bahagia.png',
+  },
+  combo: {
+    character: 'solis',
+    message: 'Wah combo! Kamu luar biasa!',
+    image: '/games/puzzle/dist/assets/ekspresi/solis-semangat.png',
+  },
+  progress_75: {
+    character: 'solis',
+    message: 'Hampir selesai! Terus semangat ya!',
+    image: '/games/puzzle/dist/assets/ekspresi/solis-semangat.png',
+  },
+  time_low: {
+    character: 'solis',
+    message: 'Waktu hampir habis! Fokus ya!',
+    image: '/games/puzzle/dist/assets/ekspresi/solis-semangat.png',
+  },
+  wrong: {
+    character: 'selena',
+    message: 'Belum tepat, coba lagi ya.',
+    image: '/games/puzzle/dist/assets/ekspresi/selena-netral.png',
+  },
+  hint: {
+    character: 'selena',
+    message: 'Seret kepingan ke tempat yang pas.',
+    image: '/games/puzzle/dist/assets/karakter/selena-menunjuk.png',
+  },
+  pause: {
+    character: 'selena',
+    message: 'Bersiaplah, game akan segera dimulai!',
+    image: '/games/puzzle/dist/assets/ekspresi/selena-berpikir.png',
+  },
+  idle: {
+    character: 'selena',
+    message: 'Masih di sini? Yuk lanjut susun!',
+    image: '/games/puzzle/dist/assets/ekspresi/selena-netral.png',
+  },
+};
+
+const SOLIS_DEFAULT_IMAGE = '/games/puzzle/dist/assets/karakter/solis-melambai.png';
+const SELENA_DEFAULT_IMAGE = '/games/puzzle/dist/assets/karakter/selena-menunjuk.png';
+// CHARACTER FEEDBACK END
+
 const MAX_PIECE_SIZE = 110;
 const MIN_PIECE_SIZE = 64;
 const BOARD_BORDER = 14;
@@ -34,6 +109,23 @@ const GameBoard: React.FC<GameBoardProps> = ({ puzzle, onExit, onWin }) => {
   const [isTimeUp, setIsTimeUp] = useState(false);
   const [activePieceId, setActivePieceId] = useState<string | null>(null);
   const [wrongFeedback, setWrongFeedback] = useState<WrongFeedback | null>(null);
+
+  // CHARACTER FEEDBACK START
+  const [characterFeedback, setCharacterFeedback] =
+    useState<ActiveCharacterFeedback | null>(null);
+  const [charMounted, setCharMounted] = useState(false);
+
+  const feedbackTimerRef = useRef<number | null>(null);
+  const progress75ShownRef = useRef(false);
+  const timeLowShownRef = useRef(false);
+  const idleShownRef = useRef(false);
+  const hintShownRef = useRef(false);
+  const pauseShownRef = useRef(false);
+  const consecutiveCorrectRef = useRef(0);
+  const lastCorrectAtRef = useRef(0);
+  const lastActivityRef = useRef(Date.now());
+  const idleCheckTimerRef = useRef<number | null>(null);
+  // CHARACTER FEEDBACK END
 
   const [isStarting, setIsStarting] = useState(true);
   const [countdown, setCountdown] = useState<number | 'GO' | null>(null);
@@ -66,6 +158,83 @@ const GameBoard: React.FC<GameBoardProps> = ({ puzzle, onExit, onWin }) => {
   const maxPieceDimension = Math.max(pieceWidth, pieceHeight);
 
   const isGameActive = !isFinished && !isTimeUp && countdown === null && !isStarting;
+
+  // CHARACTER FEEDBACK START
+  const resetCharacterFeedbackFlags = useCallback(() => {
+    progress75ShownRef.current = false;
+    timeLowShownRef.current = false;
+    idleShownRef.current = false;
+    hintShownRef.current = false;
+    pauseShownRef.current = false;
+    consecutiveCorrectRef.current = 0;
+    lastCorrectAtRef.current = 0;
+    lastActivityRef.current = Date.now();
+  }, []);
+
+  const markActivity = useCallback(() => {
+    lastActivityRef.current = Date.now();
+  }, []);
+
+  const showFeedback = useCallback((key: FeedbackKey) => {
+    if (key === 'progress_75' && progress75ShownRef.current) return;
+    if (key === 'time_low' && timeLowShownRef.current) return;
+    if (key === 'idle' && idleShownRef.current) return;
+    if (key === 'hint' && hintShownRef.current) return;
+    if (key === 'pause' && pauseShownRef.current) return;
+
+    const config = FEEDBACK_CONFIG[key];
+
+    if (key === 'progress_75') progress75ShownRef.current = true;
+    if (key === 'time_low') timeLowShownRef.current = true;
+    if (key === 'idle') idleShownRef.current = true;
+    if (key === 'hint') hintShownRef.current = true;
+    if (key === 'pause') pauseShownRef.current = true;
+
+    if (feedbackTimerRef.current) {
+      window.clearTimeout(feedbackTimerRef.current);
+    }
+
+    setCharacterFeedback({
+      character: config.character,
+      message: config.message,
+      image: config.image,
+    });
+
+    feedbackTimerRef.current = window.setTimeout(() => {
+      setCharacterFeedback(null);
+      feedbackTimerRef.current = null;
+    }, FEEDBACK_DURATION_MS);
+  }, []);
+
+  const handleCorrectPieceFeedback = useCallback(
+    (nextLockedCount: number) => {
+      const now = Date.now();
+      const progressRatio = totalPieces > 0 ? nextLockedCount / totalPieces : 0;
+
+      if (progressRatio >= 0.75 && !progress75ShownRef.current) {
+        showFeedback('progress_75');
+        return;
+      }
+
+      if (now - lastCorrectAtRef.current <= COMBO_WINDOW_MS) {
+        consecutiveCorrectRef.current += 1;
+      } else {
+        consecutiveCorrectRef.current = 1;
+      }
+
+      lastCorrectAtRef.current = now;
+
+      if (consecutiveCorrectRef.current >= COMBO_REQUIRED) {
+        consecutiveCorrectRef.current = 0;
+        showFeedback('combo');
+        return;
+      }
+
+      showFeedback('correct');
+    },
+    [showFeedback, totalPieces]
+  );
+  // CHARACTER FEEDBACK END
 
   const calculateBoardLayout = useCallback(() => {
     if (!tableRef.current) return;
@@ -156,6 +325,14 @@ const GameBoard: React.FC<GameBoardProps> = ({ puzzle, onExit, onWin }) => {
     setScore(0);
     setTimeLeft(GAME_TIME_SECONDS);
     setScoreAnim(false);
+    // CHARACTER FEEDBACK START
+    setCharacterFeedback(null);
+    resetCharacterFeedbackFlags();
+    if (feedbackTimerRef.current) {
+      window.clearTimeout(feedbackTimerRef.current);
+      feedbackTimerRef.current = null;
+    }
+    // CHARACTER FEEDBACK END
     createInitialPieces();
   }, [puzzle]);
 
@@ -231,8 +408,65 @@ const GameBoard: React.FC<GameBoardProps> = ({ puzzle, onExit, onWin }) => {
     return () => {
       if (scoreAnimTimerRef.current) window.clearTimeout(scoreAnimTimerRef.current);
       if (wrongFeedbackTimerRef.current) window.clearTimeout(wrongFeedbackTimerRef.current);
+      // CHARACTER FEEDBACK START
+      if (feedbackTimerRef.current) window.clearTimeout(feedbackTimerRef.current);
+      if (idleCheckTimerRef.current) window.clearInterval(idleCheckTimerRef.current);
+      // CHARACTER FEEDBACK END
     };
   }, []);
+
+  // CHARACTER FEEDBACK START
+  useEffect(() => {
+    const timer = window.setTimeout(() => setCharMounted(true), 80);
+    return () => window.clearTimeout(timer);
+  }, []);
+
+  useEffect(() => {
+    if (isStarting) {
+      showFeedback('pause');
+    }
+  }, [isStarting, showFeedback]);
+
+  useEffect(() => {
+    if (!isGameActive) return;
+
+    const timer = window.setTimeout(() => {
+      showFeedback('hint');
+    }, 900);
+
+    return () => window.clearTimeout(timer);
+  }, [isGameActive, showFeedback]);
+
+  useEffect(() => {
+    if (!isGameActive) return;
+    if (timeLeft <= TIME_LOW_SECONDS && timeLeft > 0) {
+      showFeedback('time_low');
+    }
+  }, [timeLeft, isGameActive, showFeedback]);
+
+  useEffect(() => {
+    if (!isGameActive) {
+      if (idleCheckTimerRef.current) {
+        window.clearInterval(idleCheckTimerRef.current);
+        idleCheckTimerRef.current = null;
+      }
+      return;
+    }
+
+    idleCheckTimerRef.current = window.setInterval(() => {
+      if (Date.now() - lastActivityRef.current >= IDLE_THRESHOLD_MS) {
+        showFeedback('idle');
+      }
+    }, 1000);
+
+    return () => {
+      if (idleCheckTimerRef.current) {
+        window.clearInterval(idleCheckTimerRef.current);
+        idleCheckTimerRef.current = null;
+      }
+    };
+  }, [isGameActive, showFeedback]);
+  // CHARACTER FEEDBACK END
 
   const startCountdown = () => {
     setIsStarting(false);
@@ -264,6 +498,14 @@ const GameBoard: React.FC<GameBoardProps> = ({ puzzle, onExit, onWin }) => {
     setScore(0);
     setTimeLeft(GAME_TIME_SECONDS);
     setScoreAnim(false);
+    // CHARACTER FEEDBACK START
+    setCharacterFeedback(null);
+    resetCharacterFeedbackFlags();
+    if (feedbackTimerRef.current) {
+      window.clearTimeout(feedbackTimerRef.current);
+      feedbackTimerRef.current = null;
+    }
+    // CHARACTER FEEDBACK END
     createInitialPieces();
   };
 
@@ -280,6 +522,10 @@ const GameBoard: React.FC<GameBoardProps> = ({ puzzle, onExit, onWin }) => {
   };
 
   const showWrongFeedback = (x: number, y: number) => {
+    // CHARACTER FEEDBACK START
+    showFeedback('wrong');
+    // CHARACTER FEEDBACK END
+
     setWrongFeedback({
       x,
       y,
@@ -305,6 +551,9 @@ const GameBoard: React.FC<GameBoardProps> = ({ puzzle, onExit, onWin }) => {
     if (!piece || piece.isLocked) return;
 
     e.preventDefault();
+    // CHARACTER FEEDBACK START
+    markActivity();
+    // CHARACTER FEEDBACK END
 
     setActivePieceId(id);
 
@@ -333,6 +582,10 @@ const GameBoard: React.FC<GameBoardProps> = ({ puzzle, onExit, onWin }) => {
 
       if (clientX === undefined || clientY === undefined) return;
 
+      // CHARACTER FEEDBACK START
+      markActivity();
+      // CHARACTER FEEDBACK END
+
       const x = clientX - pieceWidth / 2;
       const y = clientY - pieceHeight / 2;
 
@@ -347,12 +600,16 @@ const GameBoard: React.FC<GameBoardProps> = ({ puzzle, onExit, onWin }) => {
         )
       );
     },
-    [activePieceId, isGameActive, pieceWidth, pieceHeight]
+    [activePieceId, isGameActive, pieceWidth, pieceHeight, markActivity]
   );
 
   const handleMouseUp = useCallback(
     (e: MouseEvent | TouchEvent) => {
       if (!activePieceId || !isGameActive) return;
+
+      // CHARACTER FEEDBACK START
+      markActivity();
+      // CHARACTER FEEDBACK END
 
       setPieces((prev) => {
         const active = prev.find((p) => p.id === activePieceId);
@@ -388,8 +645,13 @@ const GameBoard: React.FC<GameBoardProps> = ({ puzzle, onExit, onWin }) => {
 
           const isAllLocked = updated.every((p) => p.isLocked);
           const timeBonus = isAllLocked ? timeLeft * 50 : 0;
+          const nextLockedCount = updated.filter((p) => p.isLocked).length;
 
           setScore((s) => s + 100 + timeBonus);
+
+          // CHARACTER FEEDBACK START
+          handleCorrectPieceFeedback(nextLockedCount);
+          // CHARACTER FEEDBACK END
 
           if (isAllLocked) {
             window.setTimeout(() => {
@@ -431,6 +693,8 @@ const GameBoard: React.FC<GameBoardProps> = ({ puzzle, onExit, onWin }) => {
       boardWidth,
       boardHeight,
       timeLeft,
+      markActivity,
+      handleCorrectPieceFeedback,
     ]
   );
 
@@ -487,6 +751,18 @@ const GameBoard: React.FC<GameBoardProps> = ({ puzzle, onExit, onWin }) => {
 
     return `${m}:${s.toString().padStart(2, '0')}`;
   };
+
+  // CHARACTER FEEDBACK START
+  const solisImage =
+    characterFeedback?.character === 'solis'
+      ? characterFeedback.image
+      : SOLIS_DEFAULT_IMAGE;
+
+  const selenaImage =
+    characterFeedback?.character === 'selena'
+      ? characterFeedback.image
+      : SELENA_DEFAULT_IMAGE;
+  // CHARACTER FEEDBACK END
 
   return (
     <div
@@ -600,6 +876,72 @@ const GameBoard: React.FC<GameBoardProps> = ({ puzzle, onExit, onWin }) => {
         </div>
       </div>
 
+      {/* CHARACTER FEEDBACK START */}
+      <div
+        className={`
+          pointer-events-none fixed bottom-[8.75rem] left-4 z-[85]
+          w-[96px] transition-opacity duration-700
+          sm:left-6 sm:w-[112px]
+          md:bottom-[9rem] md:left-10 md:w-[136px]
+          lg:left-14 lg:w-[156px]
+          ${charMounted ? 'opacity-100' : 'opacity-0'}
+        `}
+      >
+        <div className="relative overflow-visible">
+          {characterFeedback?.character === 'solis' && (
+            <div
+              aria-live="polite"
+              className="absolute bottom-full left-1/2 z-20 mb-2 w-[max(9rem,calc(100vw-12rem))] max-w-[11rem] -translate-x-1/2 rounded-xl border-2 border-[#F7C84A]/50 bg-white px-3 py-2 shadow-[0_10px_24px_rgba(61,76,145,0.18)] sm:max-w-[12rem]"
+            >
+              <p className="text-center font-fredoka text-[10px] leading-snug text-[#3C5A9A] sm:text-xs">
+                {characterFeedback.message}
+              </p>
+              <span className="absolute -bottom-1.5 left-1/2 h-3 w-3 -translate-x-1/2 rotate-45 border-b-2 border-r-2 border-[#F7C84A]/50 bg-white" />
+            </div>
+          )}
+
+          <img
+            src={solisImage}
+            alt="Solis mendampingi permainan"
+            draggable={false}
+            className="relative z-10 h-auto w-full object-contain drop-shadow-[0_12px_16px_rgba(44,78,144,0.2)] animate-game-char-float"
+          />
+        </div>
+      </div>
+
+      <div
+        className={`
+          pointer-events-none fixed bottom-[8.75rem] right-[14.5rem] z-[85]
+          w-[96px] transition-opacity duration-700 delay-100
+          sm:right-[15rem] sm:w-[112px]
+          md:bottom-[9rem] md:right-[15.5rem] md:w-[136px]
+          lg:right-[17rem] lg:w-[156px]
+          ${charMounted ? 'opacity-100' : 'opacity-0'}
+        `}
+      >
+        <div className="relative overflow-visible">
+          {characterFeedback?.character === 'selena' && (
+            <div
+              aria-live="polite"
+              className="absolute bottom-full left-1/2 z-20 mb-2 w-[max(9rem,calc(100vw-12rem))] max-w-[11rem] -translate-x-1/2 rounded-xl border-2 border-[#A594E9]/50 bg-white px-3 py-2 shadow-[0_10px_24px_rgba(61,76,145,0.18)] sm:max-w-[12rem]"
+            >
+              <p className="text-center font-fredoka text-[10px] leading-snug text-[#6757B6] sm:text-xs">
+                {characterFeedback.message}
+              </p>
+              <span className="absolute -bottom-1.5 left-1/2 h-3 w-3 -translate-x-1/2 rotate-45 border-b-2 border-r-2 border-[#A594E9]/50 bg-white" />
+            </div>
+          )}
+
+          <img
+            src={selenaImage}
+            alt="Selena mendampingi permainan"
+            draggable={false}
+            className="relative z-10 h-auto w-full object-contain drop-shadow-[0_12px_16px_rgba(83,73,151,0.2)] animate-game-char-float-delayed"
+          />
+        </div>
+      </div>
+      {/* CHARACTER FEEDBACK END */}
+
       <div className="h-32 shrink-0 bg-[#4e342e] border-t-8 border-[#3e2723] relative z-[50] shadow-[0_-15px_45px_rgba(0,0,0,0.5)] touch-none">
         <div className="absolute inset-4 bg-black/20 rounded-[2rem] shadow-inner flex flex-col items-center justify-center border border-white/5">
           <span className="text-white/10 font-fredoka text-xs uppercase tracking-[1.2em] mb-1 select-none">
@@ -689,18 +1031,41 @@ const GameBoard: React.FC<GameBoardProps> = ({ puzzle, onExit, onWin }) => {
 
       {isStarting && (
         <div className="fixed inset-0 z-[1000] bg-[#1E2939]/60 backdrop-blur-md flex items-center justify-center p-6 animate-fade-in">
-          <div className="bg-white p-12 rounded-[4rem] border-[12px] border-[#81C784] shadow-2xl text-center transform animate-pop max-w-lg w-full">
-            <div className="text-8xl mb-6 animate-bounce">🌱</div>
-            <h2 className="text-5xl font-fredoka text-[#1E2939] mb-4 uppercase">Siap Main?</h2>
-            <p className="text-xl text-[#81C784]/80 mb-10 font-bold">Susun cepat untuk skor maksimal!</p>
+          <div className="relative flex items-end justify-center w-full max-w-2xl gap-4">
+            {/* Solis kiri */}
+            <div className="hidden sm:flex flex-col items-center shrink-0 pb-4 animate-pop" style={{ animationDelay: '0.15s' }}>
+              <img
+                src="/games/puzzle/dist/assets/karakter/solis-semangat.png"
+                alt="Solis"
+                draggable={false}
+                className="w-28 md:w-36 object-contain drop-shadow-xl animate-game-char-float"
+              />
+            </div>
 
-            <button
-              onClick={startCountdown}
-              className="group w-full bg-[#81C784] hover:bg-[#639C62] text-white font-fredoka text-4xl py-8 rounded-[2.5rem] shadow-[0_12px_0_0_#4A7B52] hover:shadow-[0_6px_0_0_#4A7B52] hover:translate-y-[6px] active:translate-y-[12px] active:shadow-none transition-all flex items-center justify-center gap-4"
-            >
-              MULAI!
-              <span className="text-5xl group-hover:rotate-12 transition-transform">🚀</span>
-            </button>
+            {/* Card tengah */}
+            <div className="bg-white p-8 md:p-12 rounded-[4rem] border-[12px] border-[#81C784] shadow-2xl text-center transform animate-pop flex-1 min-w-0">
+              <div className="text-7xl md:text-8xl mb-4 md:mb-6 animate-bounce">🌱</div>
+              <h2 className="text-4xl md:text-5xl font-fredoka text-[#1E2939] mb-3 uppercase">Siap Main?</h2>
+              <p className="text-base md:text-xl text-[#81C784]/80 mb-8 md:mb-10 font-bold">Susun cepat untuk skor maksimal!</p>
+
+              <button
+                onClick={startCountdown}
+                className="group w-full bg-[#81C784] hover:bg-[#639C62] text-white font-fredoka text-3xl md:text-4xl py-6 md:py-8 rounded-[2.5rem] shadow-[0_12px_0_0_#4A7B52] hover:shadow-[0_6px_0_0_#4A7B52] hover:translate-y-[6px] active:translate-y-[12px] active:shadow-none transition-all flex items-center justify-center gap-4"
+              >
+                MULAI!
+                <span className="text-4xl md:text-5xl group-hover:rotate-12 transition-transform">🚀</span>
+              </button>
+            </div>
+
+            {/* Selena kanan */}
+            <div className="hidden sm:flex flex-col items-center shrink-0 pb-4 animate-pop" style={{ animationDelay: '0.25s' }}>
+              <img
+                src="/games/puzzle/dist/assets/karakter/selena-melambai.png"
+                alt="Selena"
+                draggable={false}
+                className="w-28 md:w-36 object-contain drop-shadow-xl animate-game-char-float-delayed"
+              />
+            </div>
           </div>
         </div>
       )}
@@ -738,24 +1103,47 @@ const GameBoard: React.FC<GameBoardProps> = ({ puzzle, onExit, onWin }) => {
       )}
 
       {isTimeUp && !isFinished && (
-        <div className="fixed inset-0 z-[2000] flex items-center justify-center bg-[#1E2939]/80 backdrop-blur-xl animate-fade-in">
-          <div className="bg-white p-12 rounded-[4rem] text-center shadow-2xl border-[10px] border-[#DC2626] transform animate-pop max-w-sm mx-auto">
-            <div className="text-8xl mb-6">⏳</div>
-            <h2 className="text-5xl font-fredoka text-[#DC2626] mb-2 uppercase">Yah Habis!</h2>
-            <p className="text-xl text-slate-500 mb-10 font-bold">Waktunya habis, coba lagi yuk!</p>
-            <div className="flex flex-col gap-4">
-              <button
-                onClick={resetGame}
-                className="bg-[#DC2626] hover:bg-[#B71C1E] text-white font-fredoka text-3xl py-6 w-full rounded-full shadow-[0_10px_0_0_#7A0F0F] active:translate-y-2 active:shadow-none transition-all"
-              >
-                ULANGI ♻️
-              </button>
-              <button
-                onClick={onExit}
-                className="bg-slate-200 hover:bg-slate-300 text-slate-700 font-fredoka text-2xl py-4 w-full rounded-full shadow-[0_6px_0_0_#94a3b8] active:translate-y-1 active:shadow-none transition-all"
-              >
-                KEMBALI ←
-              </button>
+        <div className="fixed inset-0 z-[2000] flex items-center justify-center bg-[#1E2939]/80 backdrop-blur-xl animate-fade-in p-6">
+          <div className="relative flex items-end justify-center w-full max-w-2xl gap-4">
+            {/* Solis kiri - ekspresi terkejut */}
+            <div className="hidden sm:flex flex-col items-center shrink-0 pb-4 animate-pop" style={{ animationDelay: '0.1s' }}>
+              <img
+                src="/games/puzzle/dist/assets/ekspresi/solis-terkejut.png"
+                alt="Solis terkejut"
+                draggable={false}
+                className="w-24 md:w-32 object-contain drop-shadow-xl animate-game-char-float"
+              />
+            </div>
+
+            {/* Card tengah */}
+            <div className="bg-white p-8 md:p-12 rounded-[4rem] text-center shadow-2xl border-[10px] border-[#DC2626] transform animate-pop flex-1 min-w-0">
+              <div className="text-7xl md:text-8xl mb-4 md:mb-6">⏳</div>
+              <h2 className="text-4xl md:text-5xl font-fredoka text-[#DC2626] mb-2 uppercase">Yah Habis!</h2>
+              <p className="text-base md:text-xl text-slate-500 mb-8 md:mb-10 font-bold">Waktunya habis, coba lagi yuk!</p>
+              <div className="flex flex-col gap-4">
+                <button
+                  onClick={resetGame}
+                  className="bg-[#DC2626] hover:bg-[#B71C1E] text-white font-fredoka text-2xl md:text-3xl py-5 md:py-6 w-full rounded-full shadow-[0_10px_0_0_#7A0F0F] active:translate-y-2 active:shadow-none transition-all"
+                >
+                  ULANGI ♻️
+                </button>
+                <button
+                  onClick={onExit}
+                  className="bg-slate-200 hover:bg-slate-300 text-slate-700 font-fredoka text-xl md:text-2xl py-4 w-full rounded-full shadow-[0_6px_0_0_#94a3b8] active:translate-y-1 active:shadow-none transition-all"
+                >
+                  KEMBALI ←
+                </button>
+              </div>
+            </div>
+
+            {/* Selena kanan - ekspresi peduli */}
+            <div className="hidden sm:flex flex-col items-center shrink-0 pb-4 animate-pop" style={{ animationDelay: '0.2s' }}>
+              <img
+                src="/games/puzzle/dist/assets/ekspresi/selena-peduli.png"
+                alt="Selena peduli"
+                draggable={false}
+                className="w-24 md:w-32 object-contain drop-shadow-xl animate-game-char-float-delayed"
+              />
             </div>
           </div>
         </div>
@@ -844,6 +1232,43 @@ const GameBoard: React.FC<GameBoardProps> = ({ puzzle, onExit, onWin }) => {
         .animate-wrong-pop {
           animation: wrong-pop 0.8s ease-out forwards;
         }
+
+        /* CHARACTER FEEDBACK START */
+        @keyframes game-char-float {
+          0%, 100% {
+            transform: translateY(0);
+          }
+
+          50% {
+            transform: translateY(-8px);
+          }
+        }
+
+        @keyframes game-char-float-delayed {
+          0%, 100% {
+            transform: translateY(-3px);
+          }
+
+          50% {
+            transform: translateY(5px);
+          }
+        }
+
+        .animate-game-char-float {
+          animation: game-char-float 5s ease-in-out infinite;
+        }
+
+        .animate-game-char-float-delayed {
+          animation: game-char-float-delayed 5.4s ease-in-out infinite;
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+          .animate-game-char-float,
+          .animate-game-char-float-delayed {
+            animation: none !important;
+          }
+        }
+        /* CHARACTER FEEDBACK END */
       `}</style>
     </div>
   );

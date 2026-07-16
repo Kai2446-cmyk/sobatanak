@@ -52,79 +52,107 @@ const SuccessModal: React.FC<SuccessModalProps> = ({ onNext, score = 0 }) => {
         ))}
       </div>
 
-      {/* Main Modal Container */}
-      <div
-        className={`
-          bg-white
-          rounded-[2rem] md:rounded-[2.5rem]
-          border-[5px] md:border-[7px] border-[#81C784]
-          px-5 py-6 md:px-8 md:py-7
-          max-w-[420px] md:max-w-[520px]
-          w-full
-          max-h-[90vh]
-          flex flex-col items-center justify-center
-          overflow-y-auto text-center
-          shadow-[0_24px_50px_rgba(0,0,0,0.35)]
-          transition-all duration-700 transform
-          ${show ? 'scale-100 opacity-100 translate-y-0' : 'scale-75 opacity-0 translate-y-10'}
-        `}
-      >
-        {/* Trophy Section */}
-        <div className="relative inline-block mb-3 md:mb-4 shrink-0">
-          <div className="absolute -inset-5 bg-[#FFF54F] rounded-full blur-2xl opacity-30 animate-pulse" />
-          <div className="text-6xl md:text-7xl animate-trophy-bounce drop-shadow-2xl">
-            🏆
-          </div>
-          <div className="absolute -top-1 -right-1 text-2xl md:text-3xl animate-spin-slow">
-            🌟
-          </div>
-        </div>
-
-        <h2 className="text-3xl md:text-4xl font-fredoka text-[#1E2939] mb-2 tracking-tight">
-          Luar Biasa!
-        </h2>
-
-        <div className="text-2xl md:text-3xl mb-4 tracking-[0.25em] animate-bounce-slow">
-          {getStars()}
-        </div>
-
-        {/* Score Box */}
-        <div className="bg-[#ECFDF5] px-4 py-4 md:px-6 md:py-5 rounded-[1.5rem] md:rounded-[2rem] mb-5 border-2 border-dashed border-[#81C784]/30 w-full">
-          <p className="text-[10px] md:text-sm font-black text-[#81C784]/70 uppercase tracking-widest mb-1">
-            Total Skor
-          </p>
-
-          <p className="text-4xl md:text-5xl font-fredoka text-[#81C784] mb-2">
-            {score}
-          </p>
-
-          <p className="text-xs md:text-base text-[#1E2939] font-bold leading-relaxed italic">
-            "Keren, puzzlenya beres!."
-          </p>
-        </div>
-
-        <button
-          onClick={onNext}
-          className="
-            group w-full
-            bg-[#81C784] hover:bg-[#639C62]
-            text-white font-fredoka
-            text-xl md:text-2xl
-            py-4 md:py-5 px-6
-            rounded-[1.25rem] md:rounded-[1.5rem]
-            shadow-[0_7px_0_0_#4A7B52]
-            hover:translate-y-[3px]
-            active:translate-y-[7px] active:shadow-none
-            transition-all
-            flex items-center justify-center gap-3
-            shrink-0
-          "
+      {/* Layout dengan karakter di sisi */}
+      <div className="relative flex items-end justify-center w-full max-w-2xl gap-3 md:gap-5">
+        {/* Solis kiri - menang */}
+        <div
+          className={`hidden sm:flex flex-col items-center shrink-0 pb-4 transition-all duration-700 ${show ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}
+          style={{ transitionDelay: '0.3s' }}
         >
-          SIAP LAGI!
-          <span className="text-2xl md:text-3xl group-hover:rotate-12 transition-transform">
-            🚀
-          </span>
-        </button>
+          <img
+            src="/games/puzzle/dist/assets/karakter/solis-menang.png"
+            alt="Solis menang"
+            draggable={false}
+            className="w-28 md:w-36 object-contain drop-shadow-xl animate-char-celebrate"
+          />
+        </div>
+
+        {/* Main Modal Container */}
+        <div
+          className={`
+            bg-white
+            rounded-[2rem] md:rounded-[2.5rem]
+            border-[5px] md:border-[7px] border-[#81C784]
+            px-5 py-6 md:px-8 md:py-7
+            flex-1 min-w-0
+            max-h-[90vh]
+            flex flex-col items-center justify-center
+            overflow-y-auto text-center
+            shadow-[0_24px_50px_rgba(0,0,0,0.35)]
+            transition-all duration-700 transform
+            ${show ? 'scale-100 opacity-100 translate-y-0' : 'scale-75 opacity-0 translate-y-10'}
+          `}
+        >
+          {/* Trophy Section */}
+          <div className="relative inline-block mb-3 md:mb-4 shrink-0">
+            <div className="absolute -inset-5 bg-[#FFF54F] rounded-full blur-2xl opacity-30 animate-pulse" />
+            <div className="text-6xl md:text-7xl animate-trophy-bounce drop-shadow-2xl">
+              🏆
+            </div>
+            <div className="absolute -top-1 -right-1 text-2xl md:text-3xl animate-spin-slow">
+              🌟
+            </div>
+          </div>
+
+          <h2 className="text-3xl md:text-4xl font-fredoka text-[#1E2939] mb-2 tracking-tight">
+            Luar Biasa!
+          </h2>
+
+          <div className="text-2xl md:text-3xl mb-4 tracking-[0.25em] animate-bounce-slow">
+            {getStars()}
+          </div>
+
+          {/* Score Box */}
+          <div className="bg-[#ECFDF5] px-4 py-4 md:px-6 md:py-5 rounded-[1.5rem] md:rounded-[2rem] mb-5 border-2 border-dashed border-[#81C784]/30 w-full">
+            <p className="text-[10px] md:text-sm font-black text-[#81C784]/70 uppercase tracking-widest mb-1">
+              Total Skor
+            </p>
+
+            <p className="text-4xl md:text-5xl font-fredoka text-[#81C784] mb-2">
+              {score}
+            </p>
+
+            <p className="text-xs md:text-base text-[#1E2939] font-bold leading-relaxed italic">
+              "Keren, puzzlenya beres!."
+            </p>
+          </div>
+
+          <button
+            onClick={onNext}
+            className="
+              group w-full
+              bg-[#81C784] hover:bg-[#639C62]
+              text-white font-fredoka
+              text-xl md:text-2xl
+              py-4 md:py-5 px-6
+              rounded-[1.25rem] md:rounded-[1.5rem]
+              shadow-[0_7px_0_0_#4A7B52]
+              hover:translate-y-[3px]
+              active:translate-y-[7px] active:shadow-none
+              transition-all
+              flex items-center justify-center gap-3
+              shrink-0
+            "
+          >
+            SIAP LAGI!
+            <span className="text-2xl md:text-3xl group-hover:rotate-12 transition-transform">
+              🚀
+            </span>
+          </button>
+        </div>
+
+        {/* Selena kanan - menang */}
+        <div
+          className={`hidden sm:flex flex-col items-center shrink-0 pb-4 transition-all duration-700 ${show ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}
+          style={{ transitionDelay: '0.45s' }}
+        >
+          <img
+            src="/games/puzzle/dist/assets/karakter/selena-menang.png"
+            alt="Selena menang"
+            draggable={false}
+            className="w-28 md:w-36 object-contain drop-shadow-xl animate-char-celebrate-delayed"
+          />
+        </div>
       </div>
 
       <style>{`
@@ -169,6 +197,16 @@ const SuccessModal: React.FC<SuccessModalProps> = ({ onNext, score = 0 }) => {
           }
         }
 
+        @keyframes char-celebrate {
+          0%, 100% { transform: translateY(0) rotate(-3deg); }
+          50% { transform: translateY(-12px) rotate(3deg); }
+        }
+
+        @keyframes char-celebrate-delayed {
+          0%, 100% { transform: translateY(-4px) rotate(3deg); }
+          50% { transform: translateY(8px) rotate(-3deg); }
+        }
+
         .animate-trophy-bounce {
           animation: trophy-bounce 3s infinite ease-in-out;
         }
@@ -183,6 +221,14 @@ const SuccessModal: React.FC<SuccessModalProps> = ({ onNext, score = 0 }) => {
 
         .animate-spin-slow {
           animation: spin-slow 8s linear infinite;
+        }
+
+        .animate-char-celebrate {
+          animation: char-celebrate 3s ease-in-out infinite;
+        }
+
+        .animate-char-celebrate-delayed {
+          animation: char-celebrate-delayed 3.5s ease-in-out infinite;
         }
 
         ::-webkit-scrollbar {

@@ -8,6 +8,20 @@ use Illuminate\Support\Facades\DB;
 
 class ProductController extends Controller
 {
+    /**
+     * Cek kolom tanpa Schema::hasColumn().
+     * Kompatibel dengan MySQL/MariaDB lama yang belum memiliki
+     * information_schema.columns.generation_expression.
+     */
+    private function tableHasColumn(string $table, string $column): bool
+    {
+        return DB::table('information_schema.columns')
+            ->whereRaw('table_schema = DATABASE()')
+            ->where('table_name', $table)
+            ->where('column_name', $column)
+            ->exists();
+    }
+
     public function index()
     {
         return view('pages.products', [
@@ -40,9 +54,9 @@ class ProductController extends Controller
             $galleryImages = collect([$product->image]);
         }
 
-        $reviewImageColumn = Schema::hasColumn('product_reviews', 'image');
+        $reviewImageColumn = $this->tableHasColumn('product_reviews', 'image');
         $reviewMultiImageTable = Schema::hasTable('product_review_images');
-        $reviewLikesColumn = Schema::hasColumn('product_reviews', 'likes_count');
+        $reviewLikesColumn = $this->tableHasColumn('product_reviews', 'likes_count');
         $activeReviewFilter = $request->query('review_filter', 'all');
 
         $baseReviewsQuery = ProductReview::with('user')->where('product_id', $id);

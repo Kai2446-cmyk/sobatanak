@@ -9,6 +9,20 @@ use Illuminate\Support\Str;
 
 class ProductReviewController extends Controller
 {
+    /**
+     * Cek kolom tanpa Schema::hasColumn().
+     * Kompatibel dengan MySQL/MariaDB lama yang belum memiliki
+     * information_schema.columns.generation_expression.
+     */
+    private function tableHasColumn(string $table, string $column): bool
+    {
+        return DB::table('information_schema.columns')
+            ->whereRaw('table_schema = DATABASE()')
+            ->where('table_name', $table)
+            ->where('column_name', $column)
+            ->exists();
+    }
+
     private function userId() { return session('user_id'); }
 
     private function syncProductRating($productId): array
@@ -57,7 +71,7 @@ class ProductReviewController extends Controller
             $existingCount = DB::table('product_review_images')
                 ->where('product_review_id', $review->id)
                 ->count();
-        } elseif (Schema::hasColumn('product_reviews', 'image') && !empty($review->image)) {
+        } elseif ($this->tableHasColumn('product_reviews', 'image') && !empty($review->image)) {
             $existingCount = 1;
         }
 
@@ -78,7 +92,7 @@ class ProductReviewController extends Controller
         }
 
         // Tetap isi kolom lama product_reviews.image supaya data lama dan tampilan lama tidak rusak.
-        if (Schema::hasColumn('product_reviews', 'image') && empty($review->image) && !empty($savedPaths[0])) {
+        if ($this->tableHasColumn('product_reviews', 'image') && empty($review->image) && !empty($savedPaths[0])) {
             $review->update(['image' => $savedPaths[0]]);
         }
 
@@ -99,7 +113,7 @@ class ProductReviewController extends Controller
                 ->all();
         }
 
-        if (Schema::hasColumn('product_reviews', 'image') && !empty($review->image)) {
+        if ($this->tableHasColumn('product_reviews', 'image') && !empty($review->image)) {
             array_unshift($images, $review->image);
         }
 
@@ -129,7 +143,7 @@ class ProductReviewController extends Controller
                     ->delete();
             }
 
-            if (Schema::hasColumn('product_reviews', 'image') && (string) ($review->image ?? '') === $imagePath) {
+            if ($this->tableHasColumn('product_reviews', 'image') && (string) ($review->image ?? '') === $imagePath) {
                 $review->forceFill(['image' => null])->save();
                 $deleted++;
             }
@@ -144,7 +158,7 @@ class ProductReviewController extends Controller
         }
 
         // Kalau kolom lama kosong tapi masih ada foto di tabel baru, isi ulang supaya kompatibel dengan tampilan lama.
-        if (Schema::hasColumn('product_reviews', 'image') && empty($review->fresh()->image) && Schema::hasTable('product_review_images')) {
+        if ($this->tableHasColumn('product_reviews', 'image') && empty($review->fresh()->image) && Schema::hasTable('product_review_images')) {
             $firstImage = DB::table('product_review_images')
                 ->where('product_review_id', $review->id)
                 ->orderBy('sort_order')
@@ -261,7 +275,7 @@ class ProductReviewController extends Controller
             ], 401);
         }
 
-        if (!Schema::hasTable('product_review_likes') || !Schema::hasColumn('product_reviews', 'likes_count')) {
+        if (!Schema::hasTable('product_review_likes') || !$this->tableHasColumn('product_reviews', 'likes_count')) {
             return response()->json(['ok' => false, 'message' => 'Fitur like ulasan belum siap. Jalankan migration dulu.'], 422);
         }
 

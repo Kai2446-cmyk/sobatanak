@@ -1,12 +1,12 @@
 const audioPaths = {
-  menuBg: import.meta.env.BASE_URL + "audio/bg-menu.mp3",
-  gameBg: import.meta.env.BASE_URL + "audio/bg-game.mp3",
-  click: import.meta.env.BASE_URL + "audio/click.mp3",
-  flip: import.meta.env.BASE_URL + "audio/flip.mp3",
-  match: import.meta.env.BASE_URL + "audio/match.mp3",
-  wrong: import.meta.env.BASE_URL + "audio/wrong.mp3",
-  win: import.meta.env.BASE_URL + "audio/win.mp3",
-  lose: import.meta.env.BASE_URL + "audio/lose.mp3",
+  menuBg: "/games/memory-card/dist/audio/bg-menu.mp3",
+  gameBg: "/games/memory-card/dist/audio/bg-game.mp3",
+  click: "/games/memory-card/dist/audio/click.mp3",
+  flip: "/games/memory-card/dist/audio/flip.mp3",
+  match: "/games/memory-card/dist/audio/match.mp3",
+  wrong: "/games/memory-card/dist/audio/wrong.mp3",
+  win: "/games/memory-card/dist/audio/win.mp3",
+  lose: "/games/memory-card/dist/audio/lose.mp3",
 };
 
 let isBgMusicMuted = false;

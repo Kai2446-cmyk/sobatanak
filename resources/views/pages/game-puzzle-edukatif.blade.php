@@ -32,7 +32,7 @@
 window.SOBAT_PUZZLE_IMAGES = @json($adminPuzzleImages);
 </script>
 @endif
-<script type="module" src="{{ asset('games/puzzle/dist/assets/index-60_ztcCS.js') }}"></script>
+<script type="module" src="{{ asset('games/puzzle/dist/assets/index-C4XX_b_V.js') }}"></script>
 @endpush
 
 @push('game_styles')

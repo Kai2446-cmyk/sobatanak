@@ -21,7 +21,7 @@ export function ReadyModal({ level, theme, onStart }: ReadyModalProps) {
         {/* Logo Sobat Anak */}
         <div className="w-12 h-12 md:w-16 md:h-16 rounded-full overflow-hidden shadow-xl flex items-center justify-center bg-white p-1 border-2 border-white/50 mx-auto mb-3">
           <img 
-            src={import.meta.env.BASE_URL + "logo-sobat-anak.png"} 
+            src="/games/memory-card/dist/logo-sobat-anak.png" 
             alt="Logo Sobat Anak" 
             className="w-full h-full object-contain"
           />

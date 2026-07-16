@@ -107,7 +107,7 @@ export function GamePage({
           <div className="text-center flex items-center justify-center gap-2">
             <div className="w-8 h-8 md:w-10 md:h-10 rounded-full overflow-hidden shadow flex items-center justify-center bg-white p-0.5 border border-amber-200">
               <img
-                src={import.meta.env.BASE_URL + "logo-sobat-anak.png"}
+                src="/games/memory-card/dist/logo-sobat-anak.png"
                 alt="Logo Sobat Anak"
                 className="w-full h-full object-contain"
               />
@@ -161,6 +161,7 @@ export function GamePage({
                 size={currentLayout.cardSize}
                 onClick={() => onFlipCard(card.uid)}
                 disabled={isPreviewPhase || isGameCompleted}
+                themeName={themeName}
               />
             ))}
           </div>

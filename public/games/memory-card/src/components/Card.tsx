@@ -1,14 +1,21 @@
-import type { GameCard } from '../types/game';
+import type { GameCard, ThemeName } from '../types/game';
 
 interface CardProps {
   card: GameCard;
   onClick: () => void;
   disabled: boolean;
   size?: 'small' | 'medium' | 'large';
+  themeName: ThemeName;
 }
 
-export function Card({ card, onClick, disabled, size = 'medium' }: CardProps) {
+export function Card({ card, onClick, disabled, size = 'medium', themeName }: CardProps) {
   const hasShakeAnimation = card.isFlipped && !card.isMatched;
+  
+  // Tentukan gambar back card dan warna background sesuai tema
+  const isSolisTheme = themeName === 'animals' || themeName === 'fruits';
+  const backCardImage = isSolisTheme ? '/games/memory-card/dist/card-back/solis-card-back.png' : '/games/memory-card/dist/card-back/selena-card-back.png';
+  const backgroundColor = isSolisTheme ? '#FEF3C7' : '#E6E6FA'; // Soft yellow untuk Solis, Soft purple untuk Selena
+  const objectPosition = isSolisTheme ? 'center' : '55% center';
 
   const sizeClass = {
     small: {
@@ -65,14 +72,21 @@ export function Card({ card, onClick, disabled, size = 'medium' }: CardProps) {
             ${currentSize.border}
             shadow-lg hover:shadow-xl transition-shadow duration-300
             border-white/50
-            bg-gradient-to-br from-amber-300 via-orange-400 to-red-400
+            overflow-hidden
+            flex items-center justify-center
           `}
+          style={{ backgroundColor: backgroundColor }}
         >
-          <div className="w-full h-full flex items-center justify-center">
-            <span className={`${currentSize.question} opacity-50`}>
-              ❓
-            </span>
-          </div>
+          <img
+            src={backCardImage}
+            alt="Back Card"
+            className="object-contain"
+            style={{ 
+              width: size === 'large' ? '80%' : size === 'medium' ? '70%' : '60%',
+              height: 'auto',
+              objectPosition: objectPosition 
+            }}
+          />
         </div>
 
         {/* Front of card */}
@@ -82,7 +96,7 @@ export function Card({ card, onClick, disabled, size = 'medium' }: CardProps) {
             ${currentSize.radius}
             ${currentSize.border}
             shadow-lg
-            ${card.isMatched ? 'matched-card bg-gradient-to-br from-green-400 to-green-500' : 'bg-white'}
+            ${card.isMatched ? 'matched-card bg-green-400' : 'bg-white'}
             ${card.isMatched ? 'border-green-300' : 'border-amber-200'}
           `}
         >

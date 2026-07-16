@@ -9,9 +9,9 @@ export const DIFFICULTY_CONFIG: Record<DifficultyLevel, { rows: number; cols: nu
 
 // Puzzle dasar (tanpa rows dan cols, akan diisi sesuai level)
 const BASE_PUZZLES = [
-  { id: 1, title: "susu ", image:import.meta.env.BASE_URL + "sob1.png", difficulty: 'susu' as const },
-  { id: 2, title: "dot bayi ", image: import.meta.env.BASE_URL + "sob2.png", difficulty: 'dot bayi' as const },
-  { id: 3, title: "set mandi ", image: import.meta.env.BASE_URL + "sob3.png", difficulty: 'set mandi' as const },
+  { id: 1, title: "susu ", image:"/games/puzzle/dist/sob1.png", difficulty: 'susu' as const },
+  { id: 2, title: "dot bayi ", image: "/games/puzzle/dist/sob2.png", difficulty: 'dot bayi' as const },
+  { id: 3, title: "set mandi ", image: "/games/puzzle/dist/sob3.png", difficulty: 'set mandi' as const },
 ];
 
 // Fungsi untuk mendapatkan puzzle dengan konfigurasi sesuai level
@@ -28,7 +28,7 @@ export const PUZZLES: PuzzleData[] = [
   {
     id: 1,
     title: "obat ",
-    image:import.meta.env.BASE_URL + "sob1.png",
+    image:"/games/puzzle/dist/sob1.png",
     rows: 3,
     cols: 4,
     difficulty: 'obat'
@@ -36,7 +36,7 @@ export const PUZZLES: PuzzleData[] = [
   {
     id: 2,
     title: "dot bayi ",
-    image: import.meta.env.BASE_URL + "sob2.jpg",
+    image: "/games/puzzle/dist/sob2.png",
     rows: 3,
     cols: 4,
     difficulty: 'dot bayi'
@@ -44,7 +44,7 @@ export const PUZZLES: PuzzleData[] = [
   {
     id: 3,
     title: "set mandi ",
-    image: import.meta.env.BASE_URL + "sob3.png",
+    image: "/games/puzzle/dist/sob3.png",
     rows: 3,
     cols: 4,
     difficulty: 'set mandi'

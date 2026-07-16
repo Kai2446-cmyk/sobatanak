@@ -75,7 +75,7 @@ const TitleScreen: React.FC<TitleScreenProps> = ({ onStart }) => {
                 
                 {/* Title with Logo */}
                 <div className="flex flex-col items-center gap-2 md:gap-4 mb-2 md:mb-4">
-                    <img src={import.meta.env.BASE_URL + "logo-sobat-anak.png"} alt="Logo Sobat Anak" className="w-14 h-14 sm:w-16 sm:h-16 md:w-24 md:h-24 lg:w-32 lg:h-32 object-contain animate-pop-in" />
+                    <img src="/games/puzzle/dist/logo-sobat-anak.png" alt="Logo Sobat Anak" className="w-14 h-14 sm:w-16 sm:h-16 md:w-24 md:h-24 lg:w-32 lg:h-32 object-contain animate-pop-in" />
                     <h1 className="text-4xl sm:text-5xl md:text-7xl lg:text-8xl xl:text-9xl font-fredoka text-[#81C784] leading-none flex flex-nowrap whitespace-nowrap">
                       {"Puzzle Ceria".split("").map((char, i) => (
                         <span 

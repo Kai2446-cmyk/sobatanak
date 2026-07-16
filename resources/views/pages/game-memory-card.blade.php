@@ -11,8 +11,8 @@
 @endsection
 
 @push('game_assets')
-<link rel="stylesheet" href="{{ asset('games/memory-card/dist/assets/index-yuIp1jOu.css') }}">
-<script type="module" src="{{ asset('games/memory-card/dist/assets/index-DNs3PDvN.js') }}"></script>
+<link rel="stylesheet" href="{{ asset('games/memory-card/dist/assets/index-BR0o6_QI.css') }}">
+<script type="module" src="{{ asset('games/memory-card/dist/assets/index-B5xTYyJf.js') }}"></script>
 @endpush
 
 @push('game_styles')
