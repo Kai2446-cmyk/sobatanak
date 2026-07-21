@@ -1,1 +1,11 @@
-{"private":true,"type":"module","scripts":{"dev":"vite --host 0.0.0.0","build":"vite build"},"devDependencies":{"@vitejs/plugin-laravel":"latest","vite":"latest","tailwindcss":"latest","postcss":"latest","autoprefixer":"latest"}}
+{
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "php artisan serve",
+    "build": "node -e \"console.log('SobatAnak memakai asset CSS/JS siap pakai dari folder public; tidak ada build Vite root yang diperlukan.')\""
+  },
+  "engines": {
+    "node": "22.x"
+  }
+}

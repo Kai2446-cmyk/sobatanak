@@ -280,6 +280,12 @@ export default function App() {
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const logoRef = useRef<HTMLImageElement | null>(null);
 
+  // Beri tahu halaman Laravel saat layar game berubah.
+  // Tombol kembali website hanya ditampilkan pada layar pembuka.
+  useEffect(() => {
+    window.parent.postMessage({ type: "sobatanak:mewarnai-screen", screen }, window.location.origin);
+  }, [screen]);
+
   useEffect(() => {
     audioRef.current = new Audio("/games/mewarnai/sound/backsound.mp3");
     audioRef.current.loop = true;

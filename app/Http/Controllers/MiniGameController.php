@@ -100,7 +100,9 @@ class MiniGameController extends Controller
                     'points_per_play' => (int) ($row->points_per_play ?? $game['points_per_play']),
                     'max_points' => (int) ($row->max_points ?? $game['max_points']),
                     'sort_order' => (int) ($row->sort_order ?? $game['sort_order']),
-                    'game_path' => $row->game_path ?: $game['game_path'],
+                    // A database copied from another environment can still contain an old game path.
+                    // Keep the configured value only when the file really exists; otherwise use the bundled default.
+                    'game_path' => $this->resolveGamePath($row->game_path, $game['game_path']),
                     'cover_image' => $row->cover_image,
                     'settings' => $row->settings ?: [],
                 ]);
@@ -125,6 +127,17 @@ class MiniGameController extends Controller
         $game['is_active'] = $game['is_active'] ?? true;
         $game['available'] = $this->gameAssetExists((string) ($game['game_path'] ?? ''));
         return $game;
+    }
+
+    private function resolveGamePath(?string $configuredPath, string $defaultPath): string
+    {
+        $configuredPath = trim((string) $configuredPath, '/');
+
+        if ($configuredPath !== '' && $this->gameAssetExists($configuredPath)) {
+            return $configuredPath;
+        }
+
+        return trim($defaultPath, '/');
     }
 
     private function gameAssetExists(string $path): bool

@@ -93,10 +93,10 @@ const SELENA_DEFAULT_IMAGE = '/games/puzzle/dist/assets/karakter/selena-menunjuk
 
 const MAX_PIECE_SIZE = 110;
 const MIN_PIECE_SIZE = 64;
-const BOARD_BORDER = 14;
-const PIECE_PADDING = 48;
-const SHELF_HEIGHT = 128;
-const SIDEBAR_WIDTH = 256;
+const BOARD_BORDER = 10;
+const PIECE_PADDING = 42;
+const SHELF_HEIGHT = 190;
+const SIDEBAR_WIDTH = 232;
 
 // Ukuran visual minimal papan.
 // Level mudah tetap jumlah piece sedikit, tetapi ukuran papan disamakan dengan level sedang.
@@ -273,14 +273,34 @@ const GameBoard: React.FC<GameBoardProps> = ({ puzzle, onExit, onWin }) => {
   const createInitialPieces = useCallback(() => {
     const windowWidth = window.innerWidth;
     const windowHeight = window.innerHeight;
+    const total = puzzle.rows * puzzle.cols;
 
-    const usableWidth = Math.max(
-      260,
-      windowWidth - SIDEBAR_WIDTH - maxPieceDimension - 120
-    );
+    // Kepingan tetap diacak seperti permainan puzzle, tetapi titik acaknya
+    // dibatasi di area rak agar tidak keluar layar atau menumpuk berlebihan.
+    const trayLeft = 30;
+    const trayRight = Math.max(trayLeft + pieceWidth, windowWidth - SIDEBAR_WIDTH - 26);
+    const trayWidth = trayRight - trayLeft;
+    const trayTop = windowHeight - SHELF_HEIGHT + 34;
+    const trayUsableHeight = Math.max(pieceHeight, SHELF_HEIGHT - 58);
 
-    const trayTop = windowHeight - SHELF_HEIGHT + 12;
-    const trayMaxY = Math.max(trayTop, windowHeight - pieceHeight - 18);
+    const minStepX = Math.max(pieceWidth * 0.72, 76);
+    const columns = Math.max(1, Math.min(total, Math.floor(trayWidth / minStepX)));
+    const rows = Math.max(1, Math.ceil(total / columns));
+    const stepX = columns > 1 ? (trayWidth - pieceWidth) / (columns - 1) : 0;
+    const stepY = rows > 1 ? Math.max(18, (trayUsableHeight - pieceHeight) / (rows - 1)) : 0;
+
+    // Shuffle deterministik: susunan tampak acak, tetapi tidak berubah saat React render ulang.
+    const shuffledSlots = Array.from({ length: total }, (_, index) => index);
+    let seed = puzzle.rows * 97 + puzzle.cols * 53 + puzzle.title.length * 17;
+    const nextRandom = () => {
+      seed = (seed * 9301 + 49297) % 233280;
+      return seed / 233280;
+    };
+
+    for (let i = shuffledSlots.length - 1; i > 0; i--) {
+      const j = Math.floor(nextRandom() * (i + 1));
+      [shuffledSlots[i], shuffledSlots[j]] = [shuffledSlots[j], shuffledSlots[i]];
+    }
 
     const newPieces: PieceState[] = [];
 
@@ -288,30 +308,37 @@ const GameBoard: React.FC<GameBoardProps> = ({ puzzle, onExit, onWin }) => {
       for (let c = 0; c < puzzle.cols; c++) {
         const id = `piece-${r}-${c}`;
         const index = r * puzzle.cols + c;
-
-        const trayX = 60 + Math.random() * usableWidth;
-        const trayY = trayTop + Math.random() * Math.max(8, trayMaxY - trayTop);
+        const slot = shuffledSlots[index];
+        const trayCol = slot % columns;
+        const trayRow = Math.floor(slot / columns);
+        const jitterX = (nextRandom() - 0.5) * Math.min(34, Math.max(10, stepX * 0.22));
+        const jitterY = (nextRandom() - 0.5) * Math.min(22, Math.max(8, stepY * 0.35));
+        const x = Math.min(
+          trayRight - pieceWidth,
+          Math.max(trayLeft, trayLeft + trayCol * stepX + jitterX)
+        );
+        const y = Math.min(
+          windowHeight - pieceHeight - 12,
+          Math.max(trayTop, trayTop + trayRow * stepY + jitterY)
+        );
 
         newPieces.push({
           id,
           row: r,
           col: c,
-          currentPos: {
-            x: trayX,
-            y: trayY,
-          },
+          currentPos: { x, y },
           targetPos: {
             x: c * pieceWidth,
             y: r * pieceHeight,
           },
           isLocked: false,
-          zIndex: 10 + index,
+          zIndex: 10 + Math.floor(nextRandom() * total),
         });
       }
     }
 
     setPieces(newPieces);
-  }, [puzzle, pieceWidth, pieceHeight, maxPieceDimension]);
+  }, [puzzle, pieceWidth, pieceHeight]);
 
   // Reset game hanya saat puzzle/level berubah.
   // Resize layar tidak boleh reset score, time, progress, atau posisi locked.
@@ -766,10 +793,10 @@ const GameBoard: React.FC<GameBoardProps> = ({ puzzle, onExit, onWin }) => {
 
   return (
     <div
-      className="relative w-full h-screen flex flex-col bg-[#FFF7ED] overflow-hidden fixed inset-0 touch-none"
+      className="relative w-full h-screen flex flex-col bg-[#FBFCF8] overflow-hidden fixed inset-0 touch-none"
       style={{ touchAction: 'none' }}
     >
-      <div className="h-24 shrink-0 px-5 md:px-10 flex justify-between items-center bg-white border-b-4 border-[#ECFDF5] z-[100] shadow-md">
+      <div className="h-[82px] shrink-0 px-5 md:px-8 flex justify-between items-center bg-white border-b-2 border-[#E5F4EF] z-[100] shadow-[0_6px_18px_rgba(42,61,60,0.06)]">
         <button
           onClick={onExit}
           className="bg-white border-b-4 border-[#FEF3C7] p-3 rounded-2xl text-[#DC2626] hover:bg-[#FEF3C7] active:translate-y-1 active:border-b-0 transition-all shadow-sm"
@@ -802,18 +829,19 @@ const GameBoard: React.FC<GameBoardProps> = ({ puzzle, onExit, onWin }) => {
       <div className="flex-1 relative flex overflow-hidden touch-none">
         <div
           ref={tableRef}
-          className="flex-1 relative bg-[#FFF7ED] shadow-inner p-8 flex items-center justify-center overflow-hidden touch-none"
+          className="flex-1 relative bg-[#FBFCF8] p-5 md:p-7 flex items-center justify-center overflow-hidden touch-none"
         >
           <div
-            className="absolute inset-0 opacity-[0.03] pointer-events-none"
+            className="absolute inset-0 pointer-events-none"
             style={{
               backgroundImage:
-                'url("https://www.transparenttextures.com/patterns/pinstriped-suit.png")',
+                'radial-gradient(circle at 1px 1px, rgba(129,199,132,0.12) 1px, transparent 0)',
+              backgroundSize: '24px 24px',
             }}
           />
 
           <div
-            className="absolute bg-[#ECFDF5] border-[14px] border-[#5d4037] shadow-[0_35px_80px_-20px_rgba(0,0,0,0.35)] rounded-[3rem] overflow-hidden"
+            className="absolute bg-[#EFFAF6] border-[10px] border-[#5B463E] shadow-[0_24px_55px_-24px_rgba(52,42,37,0.38)] rounded-[2rem] overflow-hidden"
             style={{
               width: boardWidth + BOARD_BORDER * 2,
               height: boardHeight + BOARD_BORDER * 2,
@@ -831,9 +859,9 @@ const GameBoard: React.FC<GameBoardProps> = ({ puzzle, onExit, onWin }) => {
           </div>
         </div>
 
-        <div className="w-56 md:w-64 bg-white/40 backdrop-blur-xl border-l-4 border-[#ECFDF5] flex flex-col items-center py-10 px-4 z-[90]">
-          <div className="w-full bg-[#81C784] p-1 rounded-3xl mb-8 shadow-lg rotate-1">
-            <div className="bg-white rounded-[1.4rem] p-6 text-center border-2 border-[#ECFDF5]">
+        <div className="w-52 md:w-[232px] bg-white border-l-2 border-[#E5F4EF] flex flex-col items-center py-6 px-4 z-[90]">
+          <div className="w-full bg-[#81C784] p-1 rounded-[1.6rem] mb-5 shadow-[0_10px_24px_rgba(129,199,132,0.2)]">
+            <div className="bg-white rounded-[1.35rem] px-4 py-5 text-center border-2 border-[#ECFDF5]">
               <p className="text-[10px] font-black text-[#81C784]/60 uppercase tracking-[0.3em] mb-1">SCORE</p>
               <p
                 className={`text-5xl font-fredoka text-[#81C784] transition-all duration-300 ${
@@ -845,8 +873,8 @@ const GameBoard: React.FC<GameBoardProps> = ({ puzzle, onExit, onWin }) => {
             </div>
           </div>
 
-          <div className="flex-1 space-y-6 w-full">
-            <div className="bg-white/80 p-5 rounded-[2rem] border-2 border-[#ECFDF5] shadow-sm">
+          <div className="flex-1 space-y-4 w-full">
+            <div className="bg-white p-4 rounded-[1.5rem] border-2 border-[#ECFDF5] shadow-sm">
               <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-2">Progress</p>
 
               <div className="h-4 w-full bg-[#ECFDF5] rounded-full overflow-hidden">
@@ -863,12 +891,12 @@ const GameBoard: React.FC<GameBoardProps> = ({ puzzle, onExit, onWin }) => {
               </p>
             </div>
 
-            <div className="bg-[#FEF3C7] p-5 rounded-[2rem] border-2 border-[#FEF3C7] shadow-sm animate-pulse-slow">
+            <div className="bg-[#FFF5CF] p-4 rounded-[1.5rem] border-2 border-[#FCECB0] shadow-sm animate-pulse-slow">
               <p className="text-[9px] font-bold text-[#FFA500] uppercase tracking-widest mb-1">Time Bonus</p>
               <p className="text-2xl font-fredoka text-[#FFA500]">+{timeLeft * 50}</p>
             </div>
 
-            <div className="pt-10 flex flex-col items-center opacity-20 pointer-events-none">
+            <div className="pt-4 flex flex-col items-center opacity-15 pointer-events-none">
               <div className="text-6xl mb-2">🌿</div>
               <p className="font-fredoka text-[#1E2939] text-sm">SobatAnak</p>
             </div>
@@ -942,12 +970,14 @@ const GameBoard: React.FC<GameBoardProps> = ({ puzzle, onExit, onWin }) => {
       </div>
       {/* CHARACTER FEEDBACK END */}
 
-      <div className="h-32 shrink-0 bg-[#4e342e] border-t-8 border-[#3e2723] relative z-[50] shadow-[0_-15px_45px_rgba(0,0,0,0.5)] touch-none">
-        <div className="absolute inset-4 bg-black/20 rounded-[2rem] shadow-inner flex flex-col items-center justify-center border border-white/5">
-          <span className="text-white/10 font-fredoka text-xs uppercase tracking-[1.2em] mb-1 select-none">
+      <div className="h-[190px] shrink-0 bg-[#F5EBDD] border-t-2 border-[#DFCDB8] relative z-[50] shadow-[0_-12px_30px_rgba(73,55,45,0.11)] touch-none overflow-hidden">
+        <div className="absolute inset-x-4 top-3 bottom-4 rounded-[1.65rem] border-2 border-white/90 bg-white/60 shadow-[inset_0_3px_10px_rgba(115,86,63,0.08)]" />
+        <div className="absolute inset-x-8 top-[14px] h-7 rounded-full bg-[#E8D5BF]/65 border border-white/80 shadow-sm flex items-center justify-center">
+          <span className="text-[#8D6E63]/55 font-fredoka text-[9px] uppercase tracking-[0.48em] select-none">
             RAK KEPINGAN PUZZLE
           </span>
         </div>
+        <div className="absolute inset-x-0 bottom-0 h-4 bg-[#DCC4A9] border-t border-[#CDAF8F] shadow-[0_-3px_8px_rgba(91,70,55,0.12)]" />
       </div>
 
       <div className="fixed inset-0 pointer-events-none z-[150] touch-none">
@@ -979,7 +1009,11 @@ const GameBoard: React.FC<GameBoardProps> = ({ puzzle, onExit, onWin }) => {
                 height: pieceHeight + PIECE_PADDING,
                 zIndex: isActive ? 3000 : p.isLocked ? 1 : p.zIndex,
                 transform: `translate(${-PIECE_PADDING / 2}px, ${-PIECE_PADDING / 2}px) ${
-                  isActive ? 'scale(1.12)' : 'scale(1)'
+                  isActive
+                    ? 'scale(1.08) rotate(0deg)'
+                    : p.isLocked
+                    ? 'scale(1) rotate(0deg)'
+                    : `scale(1) rotate(${((p.row * 7 + p.col * 11) % 9) - 4}deg)`
                 }`,
                 transition: isActive
                   ? 'none'
