@@ -11,7 +11,7 @@
                 <small>{{ $game['category'] ?? 'SobatAnak Game' }}</small>
             </div>
         </div>
-        <div class="game-point">⭐ Poin Kamu: <b>{{ number_format($authPoints ?? 0,0,',','.') }}</b></div>
+        <div class="game-point">⭐ Poin Kamu: <b data-points>{{ number_format($authPoints ?? 0,0,',','.') }}</b></div>
     </div>
 
     @if(!empty($game['available']))
@@ -27,6 +27,7 @@
         </div>
     @endif
 </section>
+@include('partials.game-point-bridge', ['gameSlug' => $game['slug'] ?? 'game'])
 <style>
 .game-embed-page{position:relative;min-height:100vh;background:transparent!important;padding:0}.game-embed-topbar{position:absolute;top:0;left:50%;transform:translateX(-50%);z-index:50;width:calc(100% - 48px);max-width:none;margin:0;padding:18px 0;box-sizing:border-box;display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:1rem}.game-back,.game-point{display:inline-flex;align-items:center;justify-content:center;width:max-content;border:1px solid #bfece6;background:#fff;border-radius:999px;padding:.75rem 1rem;color:#263d3b;font-weight:1000;text-decoration:none;white-space:nowrap;box-shadow:0 12px 26px rgba(42,61,60,.06)}.game-point{justify-self:end;border-color:#f6d89a;background:#fff9e9}.game-info{display:flex;align-items:center;gap:.7rem;justify-content:center;color:#263d3b;font-weight:1000}.game-info>span{width:3.2rem;height:3.2rem;border-radius:1rem;background:#fff;display:grid;place-items:center;font-size:1.8rem;border:1px solid #d7f0ed}.game-info small{display:block;color:#6b8a88;font-weight:900;margin-top:.1rem}.game-frame-wrap{width:100%;margin:0;border:0;border-radius:0;background:transparent;box-shadow:none;overflow:hidden;height:100vh;min-height:620px}.game-frame-wrap iframe{width:100%;height:100%;border:0;display:block;background:#fff}.game-missing-card{max-width:680px;margin:4rem auto;background:#fff;border:1px solid #d7f0ed;border-radius:2rem;padding:2rem;text-align:center;box-shadow:0 22px 60px rgba(42,61,60,.10)}.game-missing-card>div{font-size:4rem}.game-missing-card h1{font-family:var(--font-display,inherit);font-size:2.5rem;color:#263d3b}.game-missing-card p{color:#6b8a88;font-weight:900;margin:1rem 0}.game-back--solid{background:#ef6f66;color:#fff;border-color:#ef6f66;margin:auto}@media(max-width:760px){.game-embed-page{padding:0}.game-embed-topbar{grid-template-columns:1fr;justify-items:stretch}.game-back,.game-point{width:100%}.game-point{justify-self:stretch}.game-frame-wrap{border:0;border-radius:0;height:100vh;min-height:540px}}
 </style>

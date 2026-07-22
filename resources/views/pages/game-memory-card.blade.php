@@ -8,6 +8,7 @@
     </div>
     <div id="root"></div>
 </section>
+@include('partials.game-point-bridge', ['gameSlug' => 'memory-card'])
 @endsection
 
 @push('game_assets')
