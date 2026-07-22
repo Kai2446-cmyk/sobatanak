@@ -34,6 +34,7 @@
 @foreach($testimonials as $testimonial)<div class="admin-list">@php
     $testimonialUser = $testimonial->user ?? null;
     $avatarUrl = $testimonialUser?->avatar_url;
+    $displayName = trim((string) ($testimonialUser?->name ?? $testimonial->name ?? 'Pengguna SobatAnak'));
 @endphp
 <span class="profile-avatar admin-testimonial-avatar">
     @if($avatarUrl)

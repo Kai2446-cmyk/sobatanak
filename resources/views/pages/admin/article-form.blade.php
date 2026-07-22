@@ -234,8 +234,15 @@
                 </label>
 
                 @php
-                    $preparedAdminArticle = !$isCreate ? \App\Support\SobatArticleContent::find($article->slug) : null;
-                    $adminArticleContent = old('content', $preparedAdminArticle ? \App\Support\SobatArticleContent::toPlainText($preparedAdminArticle) : $article->content);
+                    $articleContentSupport = \App\Support\SobatArticleContent::class;
+                    $hasArticleContentSupport = class_exists($articleContentSupport);
+                    $preparedAdminArticle = (!$isCreate && $hasArticleContentSupport)
+                        ? $articleContentSupport::find($article->slug)
+                        : null;
+                    $storedArticleContent = ($preparedAdminArticle && $hasArticleContentSupport)
+                        ? $articleContentSupport::toPlainText($preparedAdminArticle)
+                        : $article->content;
+                    $adminArticleContent = old('content', $storedArticleContent);
                 @endphp
 
                 <div class="admin-form-field full">
