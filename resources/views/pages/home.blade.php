@@ -1148,7 +1148,11 @@
                 @else
                     <a href="{{ route('login') }}" class="btn-pill btn-coral simple-write-btn">Login untuk Ulasan</a>
                 @endif
-                <a href="{{ route('testimonials.index', ['sort' => 'liked']) }}" class="btn-pill simple-all-btn">Lihat Semua Ulasan</a>
+                @if($authUser)
+                    <a href="{{ route('testimonials.index', ['sort' => 'liked']) }}" class="btn-pill simple-all-btn">Lihat Semua Ulasan</a>
+                @else
+                    <a href="{{ route('login') }}" class="btn-pill simple-all-btn">Lihat Semua Ulasan</a>
+                @endif
             </div>
         </div>
 

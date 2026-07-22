@@ -1,272 +1,119 @@
-@extends('layouts.admin')@section('title','Admin Testimonial — SobatAnak')
-@section('page-title','Ulasan')
-@section('breadcrumb','Kelola ulasan/testimonial website')@section('admin-content')
-<section class="max-w-7xl mx-auto px-6 md:px-12 py-10"><div class="mb-6"><span class="text-coral font-black uppercase tracking-widest text-xs">Admin CRUD</span><h1 class="font-display section-title">Kelola <span class="text-teal">Testimonial</span></h1></div><div class="grid lg:grid-cols-2 gap-6"><div class="card p-6"><h2 class="font-display text-3xl mb-4">Tambah Testimonial</h2><form method="POST" action="{{ route('admin.testimonials.store') }}" class="grid gap-4">@csrf<input name="name" class="auth-input" placeholder="Nama" required><textarea name="message" class="auth-input min-h-[150px]" placeholder="Isi testimonial" required></textarea><button class="btn-pill btn-coral w-fit">Tambah</button></form></div><div class="card p-6"><h2 class="font-display text-3xl mb-4">Data Testimonial</h2>
-        <div class="admin-testimonial-toolbar">
-            <div class="admin-testimonial-filter-group">
-                <span>Urutkan</span>
-                <a href="{{ route('admin.testimonials', ['sort' => 'liked', 'rating' => $rating ?? 'all']) }}"
-                   class="{{ ($sort ?? 'liked') === 'liked' ? 'active' : '' }}">❤️ Like terbanyak</a>
-                <a href="{{ route('admin.testimonials', ['sort' => 'newest', 'rating' => $rating ?? 'all']) }}"
-                   class="{{ ($sort ?? 'liked') === 'newest' ? 'active' : '' }}">Terbaru</a>
-            </div>
+@extends('layouts.app')
+@section('title','Ulasan Website — SobatAnak')
 
-            <div class="admin-testimonial-filter-group">
-                <span>Rating</span>
-                <a href="{{ route('admin.testimonials', ['sort' => $sort ?? 'liked', 'rating' => 'all']) }}"
-                   class="rating-filter-all {{ ($rating ?? 'all') === 'all' ? 'active' : '' }}">Semua Rating</a>
-                @for($i = 5; $i >= 1; $i--)
-                    <a href="{{ route('admin.testimonials', ['sort' => $sort ?? 'liked', 'rating' => $i]) }}"
-                       class="rating-filter-pill {{ (string)($rating ?? 'all') === (string)$i ? 'active' : '' }}">
-                        <span class="rating-filter-stars" aria-hidden="true">
-                            @for($star = 1; $star <= 5; $star++)
-                                <i class="{{ $star <= $i ? 'filled' : '' }}">★</i>
-                            @endfor
-                        </span>
-                        <b>{{ $i }}</b>
-                        @if(isset($ratingCounts))
-                            <small>{{ $ratingCounts[$i] ?? 0 }}</small>
-                        @endif
-                    </a>
+@section('content')
+<style>
+.review-page{background:linear-gradient(135deg,#fff8ef 0%,#f7fffd 55%,#eefcf9 100%);min-height:75vh;padding:4.5rem 0 5rem}.review-shell{max-width:1180px;margin:auto;padding:0 1.5rem}.review-head{display:flex;justify-content:space-between;gap:2rem;align-items:flex-end;margin-bottom:2rem}.review-eyebrow{color:#ff7e78;font-weight:900;text-transform:uppercase;letter-spacing:.18em;font-size:.78rem}.review-title{font-family:'Fredoka',sans-serif;font-size:clamp(2.25rem,5vw,4.2rem);line-height:1;color:#2a3d3c;font-weight:900;margin:.7rem 0}.review-title span{color:#4bbfb0}.review-summary{color:#718987;font-weight:700}.review-form,.review-filter,.review-card{background:rgba(255,255,255,.92);border:1px solid rgba(75,191,176,.25);box-shadow:0 18px 45px rgba(42,61,60,.08);border-radius:28px}.review-form{padding:1.5rem;margin-bottom:1.5rem}.review-form-grid{display:grid;grid-template-columns:220px 1fr auto;gap:1rem;align-items:end}.review-label{display:block;color:#2a3d3c;font-weight:900;margin-bottom:.4rem}.review-input{width:100%;border:1px solid #cfe9e5;border-radius:16px;padding:.85rem 1rem;background:white;font-weight:700;outline:none}.review-input:focus{border-color:#4bbfb0;box-shadow:0 0 0 3px rgba(75,191,176,.15)}.review-btn{display:inline-flex;justify-content:center;align-items:center;border:0;border-radius:999px;padding:.85rem 1.35rem;background:#ff8f78;color:white;font-weight:900;cursor:pointer}.review-filter{display:flex;justify-content:space-between;gap:1rem;flex-wrap:wrap;padding:1rem 1.25rem;margin-bottom:1.5rem}.review-filter-group{display:flex;gap:.55rem;flex-wrap:wrap}.review-chip{border:1px solid #c9e9e4;border-radius:999px;padding:.55rem .9rem;color:#58716f;background:white;font-weight:900;font-size:.86rem}.review-chip.active{background:#4bbfb0;color:white;border-color:#4bbfb0}.review-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:1.25rem}.review-card{padding:1.45rem;display:flex;flex-direction:column;min-height:250px}.review-top{display:flex;justify-content:space-between;gap:1rem}.review-stars{color:#ffbf4b;font-size:1.25rem;letter-spacing:.05em}.review-like{border:1px solid #ffd0c8;background:#fff7f4;color:#ff7e78;border-radius:999px;padding:.4rem .75rem;font-weight:900;cursor:pointer}.review-like.liked{background:#ff8f78;color:white}.review-message{color:#607a78;font-weight:800;font-size:1.08rem;line-height:1.65;margin:1.2rem 0;flex:1}.review-user{display:flex;align-items:center;gap:.8rem}.review-avatar{width:48px;height:48px;border-radius:16px;object-fit:cover;background:linear-gradient(135deg,#4bbfb0,#ff9b80);display:grid;place-items:center;color:white;font-weight:900}.review-name{font-weight:900;color:#2a3d3c}.review-date{font-size:.86rem;color:#79908e;font-weight:800}.review-badge{display:inline-flex;width:max-content;border:1px solid #bde8e2;background:#effbf9;color:#319b8e;border-radius:999px;padding:.25rem .65rem;font-size:.7rem;font-weight:900;text-transform:uppercase;letter-spacing:.08em;margin-bottom:.8rem}.review-actions{display:flex;gap:.6rem;margin-top:1rem}.review-action{border:0;background:#effaf8;color:#319b8e;border-radius:999px;padding:.45rem .8rem;font-weight:900;cursor:pointer}.review-action.danger{background:#fff0ed;color:#e1665d}.review-edit{display:none;margin-top:1rem}.review-edit.open{display:block}.review-empty{text-align:center;padding:3rem;background:white;border-radius:28px;font-weight:900;color:#718987}.review-pagination{margin-top:2rem}.review-pagination nav>div:first-child{display:none}@media(max-width:850px){.review-head{align-items:flex-start;flex-direction:column}.review-form-grid{grid-template-columns:1fr}.review-grid{grid-template-columns:1fr}}
+</style>
+
+<section class="review-page">
+    <div class="review-shell">
+        <div class="review-head">
+            <div>
+                <span class="review-eyebrow">Ulasan Website</span>
+                <h1 class="review-title">Apa Kata <span>Mereka</span></h1>
+                <p class="review-summary">{{ $totalReviews }} ulasan · Rata-rata {{ number_format($averageRating,1) }}/5</p>
+            </div>
+            <a href="{{ route('home') }}" class="review-chip">← Kembali ke Beranda</a>
+        </div>
+
+        @if($errors->any())
+            <div class="review-form" style="background:#fff1ee;color:#cf584f;font-weight:900">
+                {{ $errors->first() }}
+            </div>
+        @endif
+
+        <form method="POST" action="{{ route('testimonials.store.user') }}" class="review-form">
+            @csrf
+            <div class="review-form-grid">
+                <div>
+                    <label class="review-label">Rating</label>
+                    <select name="rating" class="review-input">
+                        @for($i=5;$i>=1;$i--)
+                            <option value="{{ $i }}" @selected(old('rating',5)==$i)>{{ str_repeat('★',$i) }}{{ str_repeat('☆',5-$i) }}</option>
+                        @endfor
+                    </select>
+                </div>
+                <div>
+                    <label class="review-label">Ulasan kamu</label>
+                    <textarea name="message" class="review-input" rows="2" maxlength="400" required placeholder="Ceritakan pengalaman menggunakan SobatAnak...">{{ old('message') }}</textarea>
+                </div>
+                <button class="review-btn" type="submit">Kirim Ulasan</button>
+            </div>
+        </form>
+
+        <div class="review-filter">
+            <div class="review-filter-group">
+                <a class="review-chip {{ $activeSort==='liked'?'active':'' }}" href="{{ route('testimonials.index',['sort'=>'liked','rating'=>$activeRating]) }}">Paling Disukai</a>
+                <a class="review-chip {{ $activeSort==='newest'?'active':'' }}" href="{{ route('testimonials.index',['sort'=>'newest','rating'=>$activeRating]) }}">Terbaru</a>
+            </div>
+            <div class="review-filter-group">
+                <a class="review-chip {{ $activeRating==='all'?'active':'' }}" href="{{ route('testimonials.index',['sort'=>$activeSort,'rating'=>'all']) }}">Semua</a>
+                @for($i=5;$i>=1;$i--)
+                    <a class="review-chip {{ (string)$activeRating===(string)$i?'active':'' }}" href="{{ route('testimonials.index',['sort'=>$activeSort,'rating'=>$i]) }}">{{ $i }} ★ ({{ $ratingCounts[$i] ?? 0 }})</a>
                 @endfor
             </div>
         </div>
-@foreach($testimonials as $testimonial)<div class="admin-list">@php
-    $testimonialUser = $testimonial->user ?? null;
-    $avatarUrl = $testimonialUser?->avatar_url;
-@endphp
-<span class="profile-avatar admin-testimonial-avatar">
-    @if($avatarUrl)
-        <img src="{{ $avatarUrl }}" alt="Foto profil {{ $displayName }}">
-    @endif
-</span>
-<div class="flex-1">
-    <b>{{ $displayName }}</b>
-    <p>{{ $testimonial->message }}</p>
-    <div class="admin-testimonial-meta">
-        <span>⭐ {{ $testimonial->rating ?? 5 }}/5</span>
-        <span>❤️ {{ $testimonial->real_likes_count ?? $testimonial->likes_count ?? 0 }} like</span>
+
+        <div class="review-grid">
+            @forelse($testimonials as $testimonial)
+                @php
+                    $testimonialUser = $testimonial->user ?? null;
+                    $displayName = $testimonialUser?->name ?: ($testimonial->name ?: 'Pengguna SobatAnak');
+                    $avatarPath = $testimonialUser?->avatar;
+                    $avatarUrl = $avatarPath ? ((str_starts_with($avatarPath,'http://') || str_starts_with($avatarPath,'https://') || str_starts_with($avatarPath,'/')) ? $avatarPath : asset($avatarPath)) : null;
+                    $isOwner = (int)$testimonial->user_id === (int)$authUser->id;
+                    $displayLikes = max((int)($testimonial->likes_count ?? 0),(int)($testimonial->real_likes_count ?? 0));
+                    $liked = in_array($testimonial->id,$likedTestimonialIds ?? []);
+                @endphp
+                <article class="review-card">
+                    <div class="review-top">
+                        <div class="review-stars">{{ str_repeat('★',(int)($testimonial->rating ?? 5)) }}{{ str_repeat('☆',5-(int)($testimonial->rating ?? 5)) }}</div>
+                        <button type="button" class="review-like {{ $liked?'liked':'' }}" data-like-url="{{ route('testimonials.like',$testimonial) }}">♥ <span>{{ $displayLikes }}</span></button>
+                    </div>
+                    <p class="review-message">“{{ $testimonial->message }}”</p>
+                    @if($testimonial->is_edited ?? false)<span class="review-badge">Edited</span>@endif
+                    <div class="review-user">
+                        @if($avatarUrl)
+                            <img class="review-avatar" src="{{ $avatarUrl }}" alt="Foto profil {{ $displayName }}">
+                        @else
+                            <span class="review-avatar">{{ strtoupper(mb_substr($displayName,0,1)) }}</span>
+                        @endif
+                        <div><div class="review-name">{{ $displayName }}</div><div class="review-date">{{ optional($testimonial->created_at)->format('d M Y') }}</div></div>
+                    </div>
+                    @if($isOwner)
+                        <div class="review-actions">
+                            <button type="button" class="review-action" onclick="document.getElementById('edit-{{ $testimonial->id }}').classList.toggle('open')">Edit</button>
+                            <form method="POST" action="{{ route('testimonials.destroy.user',$testimonial) }}" data-cute-confirm="Hapus ulasan website ini?">@csrf @method('DELETE')<button class="review-action danger" type="submit">Hapus</button></form>
+                        </div>
+                        <form id="edit-{{ $testimonial->id }}" class="review-edit" method="POST" action="{{ route('testimonials.update',$testimonial) }}">
+                            @csrf @method('PATCH')
+                            <select name="rating" class="review-input" style="margin-bottom:.7rem">@for($i=5;$i>=1;$i--)<option value="{{ $i }}" @selected((int)$testimonial->rating===$i)>{{ $i }} Bintang</option>@endfor</select>
+                            <textarea name="message" class="review-input" rows="3" maxlength="400" required>{{ $testimonial->message }}</textarea>
+                            <button class="review-btn" style="margin-top:.7rem" type="submit">Simpan Perubahan</button>
+                        </form>
+                    @endif
+                </article>
+            @empty
+                <div class="review-empty">Belum ada ulasan pada filter ini.</div>
+            @endforelse
+        </div>
+        <div class="review-pagination">{{ $testimonials->links() }}</div>
     </div>
-</div><form method="POST" action="{{ route('admin.testimonials.destroy',$testimonial) }}">@csrf @method('DELETE')<button type="submit" class="btn-pill btn-coral text-xs py-2" data-confirm="Hapus ulasan ini dari halaman admin?">Hapus</button></form></div>@endforeach
-@if($testimonials->count() === 0)
-    <div class="admin-testimonial-empty">
-        <b>Belum ada ulasan pada filter ini.</b>
-        <p>Coba pilih rating lain atau kembali ke Semua.</p>
-    </div>
-@endif
-</div></div></section>
+</section>
 
-<style>
-/* FIX admin ulasan: tampilkan foto profile user */
-.admin-testimonial-avatar{
-    width:52px !important;
-    height:52px !important;
-    min-width:52px !important;
-    overflow:hidden !important;
-    padding:0 !important;
-    display:flex !important;
-    align-items:center !important;
-    justify-content:center !important;
-    border-radius:999px !important;
-    background:linear-gradient(135deg,#4BBFB0,#E8756A) !important;
-    color:#fff !important;
-    font-weight:1000 !important;
-}
-.admin-testimonial-avatar img{
-    width:100% !important;
-    height:100% !important;
-    object-fit:cover !important;
-    display:block !important;
-}
-</style>
-
-
-<style>
-/* FIX admin ulasan: filter like terbanyak dan rating */
-.admin-testimonial-toolbar{
-    display:grid;
-    gap:12px;
-    margin:0 0 18px;
-    padding:14px;
-    border:1px solid #D4EEEC;
-    background:#F8FFFD;
-    border-radius:22px;
-}
-.admin-testimonial-filter-group{
-    display:flex;
-    flex-wrap:wrap;
-    align-items:center;
-    gap:8px;
-}
-.admin-testimonial-filter-group span{
-    color:#2A3D3C;
-    font-weight:1000;
-    margin-right:4px;
-}
-.admin-testimonial-filter-group a{
-    display:inline-flex;
-    align-items:center;
-    gap:5px;
-    min-height:36px;
-    padding:0 13px;
-    border-radius:999px;
-    border:1px solid #D4EEEC;
-    background:#fff;
-    color:#6B8A88;
-    font-weight:1000;
-    text-decoration:none;
-    transition:.2s ease;
-}
-.admin-testimonial-filter-group a:hover,
-.admin-testimonial-filter-group a.active{
-    background:#4BBFB0;
-    border-color:#4BBFB0;
-    color:#fff;
-    box-shadow:0 10px 24px rgba(75,191,176,.18);
-}
-.admin-testimonial-filter-group a small{
-    opacity:.85;
-    font-size:.75rem;
-}
-.admin-testimonial-meta{
-    display:flex;
-    flex-wrap:wrap;
-    gap:7px;
-    margin-top:8px;
-}
-.admin-testimonial-meta span{
-    display:inline-flex;
-    align-items:center;
-    min-height:28px;
-    padding:0 10px;
-    border-radius:999px;
-    background:#FFF8D7;
-    color:#6B5A18;
-    font-weight:1000;
-    font-size:.78rem;
-}
-.admin-testimonial-meta span + span{
-    background:#FDECEA;
-    color:#E8756A;
-}
-.admin-testimonial-empty{
-    text-align:center;
-    padding:24px;
-    border:1px dashed #D4EEEC;
-    border-radius:20px;
-    color:#6B8A88;
-    font-weight:900;
-}
-.admin-testimonial-empty b{
-    display:block;
-    color:#2A3D3C;
-    font-size:1.05rem;
-}
-</style>
-
-
-<style>
-/* FIX admin ulasan: filter rating bintang lebih cantik dan table/list lebih rapi */
-.admin-testimonial-toolbar{
-    gap:16px !important;
-    padding:18px !important;
-    border-radius:26px !important;
-    background:linear-gradient(135deg,rgba(248,255,253,.96),rgba(255,250,245,.92)) !important;
-}
-.admin-testimonial-filter-group{
-    gap:10px !important;
-    padding:4px 0 !important;
-}
-.admin-testimonial-filter-group > span{
-    min-width:86px;
-    font-size:1.05rem;
-}
-.admin-testimonial-filter-group a{
-    min-height:42px !important;
-    padding:0 15px !important;
-}
-.admin-testimonial-filter-group a.rating-filter-all{
-    padding:0 18px !important;
-}
-.rating-filter-pill{
-    gap:8px !important;
-    padding:0 12px !important;
-}
-.rating-filter-stars{
-    display:inline-flex;
-    align-items:center;
-    gap:1px;
-    letter-spacing:-2px;
-    font-size:.92rem;
-    line-height:1;
-}
-.rating-filter-stars i{
-    font-style:normal;
-    color:#D7E6E3;
-    text-shadow:none;
-}
-.rating-filter-stars i.filled{
-    color:#FFC247;
-    text-shadow:0 2px 7px rgba(255,194,71,.22);
-}
-.rating-filter-pill b{
-    font-size:.92rem;
-    color:inherit;
-    font-weight:1000;
-}
-.rating-filter-pill small{
-    min-width:22px;
-    height:22px;
-    border-radius:999px;
-    display:inline-flex;
-    align-items:center;
-    justify-content:center;
-    background:#EEF9F6;
-    color:#6B8A88;
-    font-size:.72rem !important;
-    font-weight:1000;
-    letter-spacing:0;
-    opacity:1 !important;
-}
-.admin-testimonial-filter-group a.active .rating-filter-stars i{
-    color:rgba(255,255,255,.42);
-}
-.admin-testimonial-filter-group a.active .rating-filter-stars i.filled{
-    color:#FFE08A;
-    text-shadow:0 2px 8px rgba(255,224,138,.28);
-}
-.admin-testimonial-filter-group a.active small{
-    background:rgba(255,255,255,.24);
-    color:#fff;
-}
-.card:has(.admin-testimonial-toolbar) .flex.items-center.gap-4{
-    padding:16px 0 !important;
-    align-items:center !important;
-}
-.card:has(.admin-testimonial-toolbar) .flex.items-center.gap-4:not(:last-child){
-    border-bottom:1px solid #D4EEEC !important;
-}
-.admin-testimonial-avatar{
-    box-shadow:0 10px 22px rgba(42,61,60,.08) !important;
-}
-.admin-testimonial-meta{
-    margin-top:9px !important;
-}
-.admin-testimonial-meta span{
-    min-height:30px !important;
-}
-@media(max-width:768px){
-    .admin-testimonial-filter-group{
-        align-items:flex-start !important;
-    }
-    .admin-testimonial-filter-group > span{
-        width:100%;
-        min-width:0;
-    }
-    .rating-filter-stars{
-        font-size:.82rem;
-    }
-}
-</style>
-
+<script>
+document.querySelectorAll('[data-like-url]').forEach(function(button){
+    button.addEventListener('click', async function(){
+        try{
+            const response=await fetch(button.dataset.likeUrl,{method:'POST',headers:{'X-CSRF-TOKEN':document.querySelector('meta[name="csrf-token"]').content,'Accept':'application/json'}});
+            const data=await response.json();
+            if(response.status===401 && data.redirect){ window.location.href=data.redirect; return; }
+            if(!response.ok || !data.ok) return;
+            button.classList.toggle('liked',data.liked);
+            button.querySelector('span').textContent=data.likes_count;
+        }catch(error){}
+    });
+});
+</script>
 @endsection

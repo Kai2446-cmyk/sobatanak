@@ -32,6 +32,11 @@ class TestimonialController extends Controller
     {
         $authUser = $this->authUser();
 
+        if (!$authUser) {
+            return redirect()->route('login')
+                ->withErrors(['login' => 'Silakan login dulu untuk melihat semua ulasan website.']);
+        }
+
         $rating = $request->query('rating', 'all');
         $sort = $request->query('sort', 'liked');
 
